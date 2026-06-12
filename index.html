@@ -231,7 +231,7 @@ tr:hover td{background:#fafbfc}
   </div>
   <div class="gold-line"></div>
   <label class="form-lbl">Username</label>
-  <input class="form-inp" type="text" id="lu" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <input class="form-inp" type="text" id="lu" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" >
   <label class="form-lbl">Password</label>
   <input class="form-inp" type="password" id="lp" autocomplete="off">
   <button class="btn-login" onclick="doLogin()">Login</button>
@@ -325,48 +325,63 @@ var DB_VER  = 1;
 var STORES  = ['orders','recoveries','visits','expenses','apps','journey','settings'];
 
 function initDB(cb) {
-  var req = indexedDB.open(DB_NAME, DB_VER);
-  req.onupgradeneeded = function(e) {
-    var db = e.target.result;
-    for (var i = 0; i < STORES.length; i++) {
-      if (!db.objectStoreNames.contains(STORES[i])) {
-        db.createObjectStore(STORES[i], {keyPath:'id'});
+  try {
+    var req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = function(e) {
+      var db = e.target.result;
+      for (var i = 0; i < STORES.length; i++) {
+        if (!db.objectStoreNames.contains(STORES[i])) {
+          db.createObjectStore(STORES[i], {keyPath:'id'});
+        }
       }
-    }
-  };
-  req.onsuccess = function(e) { DB = e.target.result; if (cb) cb(); };
-  req.onerror   = function()  { if (cb) cb(); };
+    };
+    req.onsuccess = function(e) { DB = e.target.result; if (cb) cb(); };
+    req.onerror   = function(e) { console.log('DB error:', e); DB = null; if (cb) cb(); };
+    req.onblocked = function()  { console.log('DB blocked'); DB = null; if (cb) cb(); };
+  } catch(e) {
+    console.log('DB exception:', e);
+    DB = null;
+    if (cb) cb();
+  }
 }
 
 function dbGetAll(store, cb) {
   if (!DB) { cb([]); return; }
-  var tx  = DB.transaction(store,'readonly');
-  var req = tx.objectStore(store).getAll();
-  req.onsuccess = function() { cb(req.result || []); };
-  req.onerror   = function() { cb([]); };
+  try {
+    var tx  = DB.transaction(store,'readonly');
+    var req = tx.objectStore(store).getAll();
+    req.onsuccess = function() { cb(req.result || []); };
+    req.onerror   = function() { cb([]); };
+  } catch(e) { cb([]); }
 }
 
 function dbPut(store, obj, cb) {
   if (!DB) { if (cb) cb(); return; }
-  var tx  = DB.transaction(store,'readwrite');
-  var req = tx.objectStore(store).put(obj);
-  req.onsuccess = function() { if (cb) cb(); };
-  req.onerror   = function() { if (cb) cb(); };
+  try {
+    var tx  = DB.transaction(store,'readwrite');
+    var req = tx.objectStore(store).put(obj);
+    req.onsuccess = function() { if (cb) cb(); };
+    req.onerror   = function() { if (cb) cb(); };
+  } catch(e) { if (cb) cb(); }
 }
 
 function dbDelete(store, id, cb) {
   if (!DB) { if (cb) cb(); return; }
-  var tx  = DB.transaction(store,'readwrite');
-  tx.objectStore(store).delete(id);
-  tx.oncomplete = function() { if (cb) cb(); };
+  try {
+    var tx  = DB.transaction(store,'readwrite');
+    tx.objectStore(store).delete(id);
+    tx.oncomplete = function() { if (cb) cb(); };
+  } catch(e) { if (cb) cb(); }
 }
 
 function dbGetSetting(key, cb) {
   if (!DB) { cb(null); return; }
-  var tx  = DB.transaction('settings','readonly');
-  var req = tx.objectStore('settings').get(key);
-  req.onsuccess = function() { cb(req.result ? req.result.val : null); };
-  req.onerror   = function() { cb(null); };
+  try {
+    var tx  = DB.transaction('settings','readonly');
+    var req = tx.objectStore('settings').get(key);
+    req.onsuccess = function() { cb(req.result ? req.result.val : null); };
+    req.onerror   = function() { cb(null); };
+  } catch(e) { cb(null); }
 }
 
 function dbSetSetting(key, val) {
@@ -380,7 +395,7 @@ function uid() { return Date.now() + '-' + Math.random().toString(36).substr(2,8
 
 function fmtPKR(n) {
   var num = parseFloat(n) || 0;
-  return 'PKR ' + num.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+  return 'PKR ' + num.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
 }
 
 function fmtDate(d) {
@@ -439,7 +454,7 @@ function getGPS(cb) {
 }
 
 function gpsDistance(p1, p2) {
-  // Haversine formula — returns km
+  // Haversine formula - returns km
   var R = 6371;
   var dLat = (p2.lat - p1.lat) * Math.PI / 180;
   var dLng = (p2.lng - p1.lng) * Math.PI / 180;
@@ -495,14 +510,16 @@ function doLogin() {
   for (var j = 0; j < CUSTOMERS.length; j++) {
     if (CUSTOMERS[j].salesMan === CU.name) MY_CUSTS.push(CUSTOMERS[j]);
   }
-  document.getElementById('topbar-info').textContent = CU.name + ' · ' + CU.region;
+  document.getElementById('topbar-info').textContent = CU.name + '  -  ' + CU.region;
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   document.getElementById('app').style.flexDirection = 'column';
-  initDB(function() {
-    loadJourneyState();
-    showTab('dashboard', document.getElementById('tab-dashboard'));
-  });
+  // Show app immediately without waiting for DB
+  showTab('dashboard', document.getElementById('tab-dashboard'));
+  // Init DB in background
+  try {
+    initDB(function() { loadJourneyState(); });
+  } catch(dbErr) { console.log('DB:', dbErr); }
 }
 
 function doLogout() {
@@ -584,7 +601,7 @@ function handleGoLive() {
 function showGoLiveModal() {
   var html = '<div class="modal show" id="golive-modal">';
   html += '<div class="modal-box">';
-  html += '<div class="modal-hd">Start My Day <button class="modal-close" onclick="closeModal('golive-modal')">&#10005;</button></div>';
+  html += '<div class="modal-hd">Start My Day <button class="modal-close" onclick="closeModal(&apos;golive-modal&apos;)">&#10005;</button></div>';
   html += '<div class="fg"><label>Odometer Start (km)</label><input type="number" id="odo-start" placeholder="e.g. 45230"></div>';
   html += '<div class="fg"><label>Starting From</label><select id="start-from"><option>Home</option><option>Hotel / Rest House</option><option>Office</option><option>Other</option></select></div>';
   html += '<div class="gps-capture"><p>&#128205; Your GPS location will be captured automatically</p></div>';
@@ -633,11 +650,11 @@ function submitGoLive() {
 function showEndDayModal() {
   var html = '<div class="modal show" id="endday-modal">';
   html += '<div class="modal-box">';
-  html += '<div class="modal-hd">End My Day <button class="modal-close" onclick="closeModal('endday-modal')">&#10005;</button></div>';
+  html += '<div class="modal-hd">End My Day <button class="modal-close" onclick="closeModal(&apos;endday-modal&apos;)">&#10005;</button></div>';
   
   var gpsKm = JOURNEY.gpsKm ? JOURNEY.gpsKm.toFixed(1) : '0.0';
   html += '<div class="journey-card" style="margin-bottom:14px">';
-  html += '<div class="journey-status">Today's Journey Summary</div>';
+  html += '<div class="journey-status">Today&#39;s Journey Summary</div>';
   html += '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px">';
   html += '<span>Stops logged</span><strong>' + (JOURNEY.waypoints ? JOURNEY.waypoints.length : 0) + '</strong></div>';
   html += '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px">';
@@ -767,9 +784,9 @@ function renderDashboard(c) {
       html += '<div class="stat-box red"><div class="stat-val">' + Q.daysLeft + '</div><div class="stat-lbl">Days Left</div></div>';
       html += '</div>';
       html += '<div class="stat-row">';
-      html += '<div class="stat-box navy"><div class="stat-val" style="font-size:13px">' + (fmtPKR(totalBooked).replace('PKR ','')) + '</div><div class="stat-lbl">Sales PKR</div></div>';
-      html += '<div class="stat-box"><div class="stat-val" style="font-size:13px">' + (fmtPKR(totalRec).replace('PKR ','')) + '</div><div class="stat-lbl">Recovery PKR</div></div>';
-      html += '<div class="stat-box blue"><div class="stat-val" style="font-size:13px">' + (fmtPKR(dailyNeeded).replace('PKR ','')) + '</div><div class="stat-lbl">Daily Need</div></div>';
+      html += '<div class="stat-box navy"><div class="stat-val" style="font-size:13px">' + (fmtPKR(totalBooked).replace('PKR ','')) + '</div><div class="stat-lbl">Sales PKR</div></div>';
+      html += '<div class="stat-box"><div class="stat-val" style="font-size:13px">' + (fmtPKR(totalRec).replace('PKR ','')) + '</div><div class="stat-lbl">Recovery PKR</div></div>';
+      html += '<div class="stat-box blue"><div class="stat-val" style="font-size:13px">' + (fmtPKR(dailyNeeded).replace('PKR ','')) + '</div><div class="stat-lbl">Daily Need</div></div>';
       html += '</div>';
 
       // Target progress
@@ -863,7 +880,7 @@ function renderOrder(c) {
     html += '<option value="">-- Select Customer --</option>';
     for (var i = 0; i < MY_CUSTS.length; i++) {
       var sel = CART_CUST && CART_CUST.id === MY_CUSTS[i].id ? ' selected' : '';
-      html += '<option value="' + MY_CUSTS[i].id + '"' + sel + '>' + MY_CUSTS[i].name + ' · ' + MY_CUSTS[i].city + '</option>';
+      html += '<option value="' + MY_CUSTS[i].id + '"' + sel + '>' + MY_CUSTS[i].name + '  -  ' + MY_CUSTS[i].city + '</option>';
     }
     html += '</select></div>';
 
@@ -899,7 +916,7 @@ function renderOrder(c) {
         html += '<td class="fw7">' + fmtPKR(o.total) + '</td>';
         html += '<td><span class="badge ' + bc + '">' + (o.status||'Pending') + '</span></td>';
         html += '<td>';
-        if (canDel) html += '<button class="btn btn-red btn-xs" onclick="deleteOrder('' + o.id + '')">&#128465;</button>';
+        if (canDel) html += '<button class="btn btn-red btn-xs" data-oid="' + o.id + '" onclick="deleteOrderBtn(this)">&#128465;</button>';
         html += '</td></tr>';
       }
       html += '</tbody></table></div></div>';
@@ -1062,6 +1079,11 @@ function deleteOrder(oid) {
   });
 }
 
+function deleteOrderBtn(btn) {
+  var oid = btn.getAttribute('data-oid');
+  if (oid) deleteOrder(oid);
+}
+
 function showOrderPDF(order) {
   var items = order.items || [];
   var tbl = '';
@@ -1096,7 +1118,7 @@ function renderRecovery(c) {
     html += '<div class="fg"><label>Customer</label><select id="rec-cust">';
     html += '<option value="">-- Select --</option>';
     for (var i = 0; i < MY_CUSTS.length; i++) {
-      html += '<option value="' + MY_CUSTS[i].id + '">' + MY_CUSTS[i].name + ' · ' + MY_CUSTS[i].city + '</option>';
+      html += '<option value="' + MY_CUSTS[i].id + '">' + MY_CUSTS[i].name + '  -  ' + MY_CUSTS[i].city + '</option>';
     }
     html += '</select></div>';
     html += '<div class="fg-row">';
@@ -1170,7 +1192,7 @@ function renderVisits(c) {
     html += '<div class="fg"><label>Customer</label><select id="vis-cust">';
     html += '<option value="">-- Select Customer --</option>';
     for (var i = 0; i < MY_CUSTS.length; i++) {
-      html += '<option value="' + MY_CUSTS[i].id + '">' + MY_CUSTS[i].name + ' · ' + MY_CUSTS[i].city + '</option>';
+      html += '<option value="' + MY_CUSTS[i].id + '">' + MY_CUSTS[i].name + '  -  ' + MY_CUSTS[i].city + '</option>';
     }
     html += '</select></div>';
 
@@ -1391,7 +1413,7 @@ function renderExpenses(c) {
           html += '</div>';
           html += '<div class="f11 text-gray">Formula: ' + todayJourney.gpsKm.toFixed(1) + ' km x 0.02 x PKR ' + petrolRate + ' = PKR ' + fuelAmt.toFixed(0) + '</div>';
         } else if (petrolRate <= 0) {
-          html += '<div class="f12 text-red">Admin has not set today's petrol rate. Contact Mazhar.</div>';
+          html += '<div class="f12 text-red">Admin has not set today&#39;s petrol rate. Contact Mazhar.</div>';
         } else if (!todayJourney) {
           html += '<div class="f12 text-orange">End your day first to auto-calculate fuel.</div>';
         }
@@ -1600,9 +1622,9 @@ function renderReport(c) {
     html += '</div>';
 
     html += '<div class="stat-row">';
-    html += '<div class="stat-box"><div class="stat-val" style="font-size:14px">' + fmtPKR(totSales).replace('PKR ','') + '</div><div class="stat-lbl">Sales PKR</div></div>';
-    html += '<div class="stat-box"><div class="stat-val" style="font-size:14px">' + fmtPKR(totRec).replace('PKR ','') + '</div><div class="stat-lbl">Recovery PKR</div></div>';
-    html += '<div class="stat-box"><div class="stat-val" style="font-size:14px">' + fmtPKR(totExp).replace('PKR ','') + '</div><div class="stat-lbl">Expenses PKR</div></div>';
+    html += '<div class="stat-box"><div class="stat-val" style="font-size:14px">' + fmtPKR(totSales).replace('PKR ','') + '</div><div class="stat-lbl">Sales PKR</div></div>';
+    html += '<div class="stat-box"><div class="stat-val" style="font-size:14px">' + fmtPKR(totRec).replace('PKR ','') + '</div><div class="stat-lbl">Recovery PKR</div></div>';
+    html += '<div class="stat-box"><div class="stat-val" style="font-size:14px">' + fmtPKR(totExp).replace('PKR ','') + '</div><div class="stat-lbl">Expenses PKR</div></div>';
     html += '</div>';
 
     if (JOURNEY) {
