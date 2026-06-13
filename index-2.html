@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0A1628">
+<title>Biorise SFA</title>
+<link rel="manifest" href="manifest.json">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:Arial,sans-serif;background:#f0f4f8;color:#1a202c;min-height:100vh;overscroll-behavior:none}
+:root{--navy:#0A1628;--gold:#C9A84C;--green:#38a169;--red:#e53e3e;--blue:#1a56db}
+
+/* ---- LOGIN ---- */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(160deg,#0A1628 0%,#1a3a6b 100%);padding:20px}
+.login-box{background:#fff;border-radius:16px;padding:36px 28px;width:100%;max-width:340px;box-shadow:0 24px 64px rgba(0,0,0,0.35)}
+.login-logo{text-align:center;margin-bottom:20px}
+.login-logo-mark{display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;background:#0A1628;border-radius:14px;margin-bottom:10px}
+.login-logo-mark span{color:#C9A84C;font-size:32px;font-weight:900;font-family:Arial}
+.login-title{font-size:20px;font-weight:800;color:#0A1628;text-align:center}
+.login-sub{font-size:12px;color:#718096;text-align:center;margin-top:4px;margin-bottom:24px}
+.gold-line{height:3px;background:linear-gradient(90deg,#C9A84C,#e8d08a,#C9A84C);border-radius:2px;margin-bottom:20px}
+.form-lbl{font-size:11px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block}
+.form-inp{width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;color:#1a202c;background:#fff;margin-bottom:14px}
+.form-inp:focus{border-color:#0A1628;box-shadow:0 0 0 3px rgba(10,22,40,0.08)}
+.btn-login{width:100%;padding:13px;background:#0A1628;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:0.3px;margin-top:4px}
+.btn-login:active{background:#1a3a6b}
+.login-err{background:#fff5f5;color:#c53030;border:1px solid #feb2b2;border-radius:7px;padding:9px 12px;font-size:12px;margin-top:10px;display:none;text-align:center;font-weight:600}
+.login-footer{text-align:center;font-size:10px;color:#a0aec0;margin-top:20px}
+
+/* ---- APP SHELL ---- */
+#app{display:none;flex-direction:column;min-height:100vh}
+.topbar{background:#0A1628;color:#fff;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,0.25)}
+.topbar-brand{font-size:17px;font-weight:900;letter-spacing:0.3px}
+.topbar-brand em{color:#C9A84C;font-style:normal}
+.topbar-info{font-size:11px;opacity:0.7;margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.golive-btn{background:#C9A84C;color:#0A1628;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
+.golive-btn.active{background:#38a169;color:#fff}
+.golive-btn.end{background:#e53e3e;color:#fff}
+.btn-sm-out{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px}
+
+/* ---- STATUS BAR ---- */
+.status-bar{background:#fff;border-bottom:1px solid #e2e8f0;padding:6px 14px;display:flex;align-items:center;gap:12px;font-size:11px;color:#4a5568;overflow-x:auto;white-space:nowrap}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#e2e8f0;display:inline-block;margin-right:4px}
+.status-dot.live{background:#38a169;box-shadow:0 0 6px #38a169}
+
+/* ---- BOTTOM NAV ---- */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;display:flex;z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,0.08)}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 4px 6px;cursor:pointer;border:none;background:none;color:#a0aec0;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;transition:color 0.15s}
+.bnav-item .ico{font-size:20px;margin-bottom:2px;line-height:1}
+.bnav-item.active{color:#0A1628}
+.bnav-item.active .ico-bar{background:#C9A84C;height:3px;border-radius:2px;width:24px;margin:0 auto 4px}
+.bnav-more{position:relative}
+.more-menu{display:none;position:absolute;bottom:58px;right:0;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.15);border:1px solid #e2e8f0;min-width:160px;overflow:hidden;z-index:300}
+.more-menu.show{display:block}
+.more-item{padding:12px 16px;font-size:13px;font-weight:600;color:#1a202c;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f0f4f8}
+.more-item:last-child{border-bottom:none}
+.more-item:hover{background:#f7fafc}
+
+/* ---- CONTENT ---- */
+.content{flex:1;padding:14px;padding-bottom:74px;max-width:600px;margin:0 auto;width:100%}
+
+/* ---- CARDS ---- */
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07)}
+.card-hd{font-size:14px;font-weight:800;color:#0A1628;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #f0f4f8;display:flex;align-items:center;justify-content:space-between}
+.card-hd-title{display:flex;align-items:center;gap:6px}
+
+/* ---- STATS ---- */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat-box{background:#fff;border-radius:10px;padding:12px 8px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.07);border-top:3px solid #e2e8f0}
+.stat-box.gold{border-top-color:#C9A84C}
+.stat-box.green{border-top-color:#38a169}
+.stat-box.red{border-top-color:#e53e3e}
+.stat-box.blue{border-top-color:#1a56db}
+.stat-box.navy{border-top-color:#0A1628}
+.stat-val{font-size:18px;font-weight:900;color:#0A1628;line-height:1}
+.stat-lbl{font-size:9px;color:#718096;margin-top:3px;text-transform:uppercase;letter-spacing:0.4px;font-weight:600}
+
+/* ---- PROGRESS ---- */
+.prog-wrap{margin:10px 0}
+.prog-labels{display:flex;justify-content:space-between;font-size:11px;color:#4a5568;margin-bottom:4px;font-weight:600}
+.prog-bar{background:#e2e8f0;border-radius:20px;height:10px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#C9A84C,#e8a020);border-radius:20px;transition:width 0.6s ease}
+.prog-fill.gn{background:linear-gradient(90deg,#38a169,#68d391)}
+
+/* ---- FORMS ---- */
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:11px;font-weight:700;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;background:#fff;color:#1a202c;-webkit-appearance:none}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#0A1628;box-shadow:0 0 0 3px rgba(10,22,40,0.07)}
+.fg textarea{resize:vertical;min-height:70px}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.form-note{font-size:11px;color:#718096;margin-top:3px}
+
+/* ---- BUTTONS ---- */
+.btn{padding:11px 20px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:active{opacity:0.85}
+.btn-navy{background:#0A1628;color:#fff}
+.btn-gold{background:#C9A84C;color:#0A1628}
+.btn-green{background:#38a169;color:#fff}
+.btn-red{background:#e53e3e;color:#fff}
+.btn-outline{background:#fff;color:#0A1628;border:1.5px solid #0A1628}
+.btn-ghost{background:#f0f4f8;color:#4a5568;border:none}
+.btn-full{width:100%;justify-content:center}
+.btn-sm{padding:7px 14px;font-size:12px}
+.btn-xs{padding:5px 10px;font-size:11px}
+
+/* ---- TABLE ---- */
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid #e2e8f0}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:400px}
+th{background:#0A1628;color:#fff;padding:9px 10px;text-align:left;font-size:11px;font-weight:700;white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #f0f4f8;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbfc}
+
+/* ---- BADGES ---- */
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.bg-green{background:#c6f6d5;color:#276749}
+.bg-yellow{background:#fefcbf;color:#975a16}
+.bg-red{background:#fed7d7;color:#9b2c2c}
+.bg-blue{background:#bee3f8;color:#2a69ac}
+.bg-gray{background:#e2e8f0;color:#4a5568}
+.bg-orange{background:#feebc8;color:#9c4221}
+.bg-navy{background:#0A1628;color:#C9A84C}
+
+/* ---- SEARCH ---- */
+.search-wrap{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.search-wrap input,.search-wrap select{padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;outline:none;background:#fff;flex:1;min-width:100px;-webkit-appearance:none}
+.search-wrap input:focus,.search-wrap select:focus{border-color:#0A1628}
+
+/* ---- PRODUCT CARDS ---- */
+.prod-card{border:1.5px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all 0.15s;background:#fff}
+.prod-card:active{background:#f7fafc}
+.prod-card.in-cart{border-color:#C9A84C;background:#fffbf0}
+.prod-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.prod-name{font-size:13px;font-weight:700;color:#0A1628;line-height:1.3}
+.prod-meta{font-size:10px;color:#718096;margin-top:3px}
+.prod-price{font-weight:800;color:#C9A84C;font-size:14px;white-space:nowrap}
+.qty-ctrl{display:flex;align-items:center;gap:6px;margin-top:8px}
+.qty-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid #0A1628;background:#fff;color:#0A1628;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.qty-num{font-size:14px;font-weight:700;color:#0A1628;min-width:24px;text-align:center}
+
+/* ---- CART SUMMARY ---- */
+.cart-summary{background:linear-gradient(135deg,#0A1628,#1a3a6b);border-radius:12px;padding:14px;margin-bottom:14px;color:#fff}
+.cart-summary-title{font-size:12px;font-weight:700;opacity:0.7;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.cart-item-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.1)}
+.cart-item-row:last-child{border-bottom:none}
+.cart-total{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid rgba(201,168,76,0.4)}
+.cart-total-lbl{font-size:13px;font-weight:700;color:#C9A84C}
+.cart-total-val{font-size:18px;font-weight:900;color:#C9A84C}
+
+/* ---- VISIT / GPS ---- */
+.gps-capture{background:#f0fff4;border:1.5px solid #9ae6b4;border-radius:10px;padding:14px;text-align:center;margin:10px 0}
+.gps-capture p{font-size:12px;color:#276749;margin-bottom:8px;font-weight:600}
+.gps-coords{font-size:11px;color:#276749;background:#c6f6d5;padding:6px 10px;border-radius:6px;margin-top:6px;font-family:monospace}
+.gps-fail{background:#fff5f5;border:1.5px solid #feb2b2;border-radius:10px;padding:12px;font-size:12px;color:#c53030;text-align:center}
+
+/* ---- PHOTO CAPTURE ---- */
+.photo-wrap{border:2px dashed #e2e8f0;border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
+.photo-wrap:active{background:#f7fafc}
+.photo-wrap.has-photo{border-color:#38a169;border-style:solid}
+.photo-preview{width:100%;max-height:200px;object-fit:cover;border-radius:8px;display:none}
+.photo-label{font-size:13px;color:#718096;margin-top:6px}
+.photo-input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* ---- JOURNEY STATUS ---- */
+.journey-card{background:linear-gradient(135deg,#0A1628,#1a3a6b);border-radius:12px;padding:16px;margin-bottom:14px;color:#fff}
+.journey-status{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#C9A84C;margin-bottom:6px}
+.journey-time{font-size:22px;font-weight:900;color:#fff;margin-bottom:4px}
+.journey-meta{font-size:11px;opacity:0.7}
+.journey-leg{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.1);font-size:11px}
+.journey-leg:last-child{border-bottom:none}
+.leg-dot{width:8px;height:8px;border-radius:50%;background:#C9A84C;flex-shrink:0}
+
+/* ---- ALERT TOAST ---- */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:9999;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,0.2);max-width:300px;text-align:center;transition:opacity 0.3s}
+.toast-success{background:#38a169;color:#fff}
+.toast-error{background:#e53e3e;color:#fff}
+.toast-info{background:#0A1628;color:#C9A84C}
+
+/* ---- MODAL ---- */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:500;align-items:flex-end;justify-content:center;padding:0}
+.modal.show{display:flex}
+.modal-box{background:#fff;border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto}
+.modal-hd{font-size:15px;font-weight:800;color:#0A1628;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:#718096;padding:0;line-height:1}
+
+/* ---- DIVIDER ---- */
+.divider{height:1px;background:#f0f4f8;margin:14px 0}
+
+/* ---- EMPTY STATE ---- */
+.empty{text-align:center;padding:32px 16px;color:#a0aec0}
+.empty-ico{font-size:40px;margin-bottom:8px}
+.empty-txt{font-size:13px;font-weight:600}
+
+/* ---- FOOTER ---- */
+.app-footer{text-align:center;font-size:10px;color:#a0aec0;padding:12px;background:#fff;border-top:1px solid #f0f4f8}
+
+.hidden{display:none!important}
+.mt-8{margin-top:8px}
+.mt-12{margin-top:12px}
+.mt-16{margin-top:16px}
+.mb-8{margin-bottom:8px}
+.text-right{text-align:right}
+.fw7{font-weight:700}
+.fw9{font-weight:900}
+.text-gold{color:#C9A84C}
+.text-green{color:#38a169}
+.text-red{color:#e53e3e}
+.text-navy{color:#0A1628}
+.text-gray{color:#718096}
+.f11{font-size:11px}
+.f12{font-size:12px}
+.f13{font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div id="login-screen" style="display:none">
+<div class="login-box">
+  <div class="login-logo">
+    <div class="login-logo-mark"><span>B</span></div>
+    <div class="login-title">Biorise SFA</div>
+    <div class="login-sub">Sales Force Automation &mdash; Officer Portal</div>
+  </div>
+  <div class="gold-line"></div>
+  <label class="form-lbl">Username</label>
+  <input class="form-inp" type="text" id="lu" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" >
+  <label class="form-lbl">Password</label>
+  <input class="form-inp" type="password" id="lp" autocomplete="off">
+  <button class="btn-login" onclick="doLogin()">Login</button>
+  <div class="login-err" id="lerr">Invalid username or password.</div>
+  <div class="login-footer">&#169; 2026 Biorise Pharmaceuticals &middot; Multan, Pakistan<br><span style="font-size:9px">Developed by Muhammad Mazhar ul Hassan &middot; All Rights Reserved</span></div>
+</div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="app">
+
+<div class="topbar">
+  <div>
+    <div class="topbar-brand">Bio<em>rise</em> SFA</div>
+    <div class="topbar-info" id="topbar-info">Officer Portal</div>
+  </div>
+  <div class="topbar-right">
+    <button class="golive-btn" id="golive-btn" onclick="handleGoLive()">Go Live</button>
+    <button class="btn-sm-out" onclick="doLogout()">Logout</button>
+  </div>
+</div>
+
+<div class="status-bar" id="status-bar">
+  <span><span class="status-dot" id="live-dot"></span><span id="live-status">Offline</span></span>
+  <span id="status-time"></span>
+  <span id="status-visits"></span>
+  <span id="status-km"></span>
+</div>
+
+<div class="content" id="main-content"></div>
+
+<div class="app-footer">&#169; 2026 Biorise Pharmaceuticals &middot; Developed by <strong>Muhammad Mazhar ul Hassan</strong> &middot; All Intellectual Property &amp; Legal Rights Reserved. Unauthorized reproduction or distribution is strictly prohibited.</div>
+
+<nav class="bottom-nav">
+  <button class="bnav-item active" id="tab-dashboard" onclick="showTab('dashboard',this)">
+    <div class="ico-bar"></div>
+    <span class="ico">&#9636;</span>Dashboard
+  </button>
+  <button class="bnav-item" id="tab-order" onclick="showTab('order',this)">
+    <div class="ico-bar" style="display:none"></div>
+    <span class="ico">&#43;</span>Order
+  </button>
+  <button class="bnav-item" id="tab-recovery" onclick="showTab('recovery',this)">
+    <div class="ico-bar" style="display:none"></div>
+    <span class="ico">&#8635;</span>Recovery
+  </button>
+  <button class="bnav-item" id="tab-visits" onclick="showTab('visits',this)">
+    <div class="ico-bar" style="display:none"></div>
+    <span class="ico">&#128205;</span>Visits
+  </button>
+  <button class="bnav-item bnav-more" id="tab-more" onclick="toggleMore()">
+    <div class="ico-bar" style="display:none"></div>
+    <span class="ico">&#8942;</span>More
+    <div class="more-menu" id="more-menu">
+      <div class="more-item" onclick="showTab('expenses',this);toggleMore()">&#128176; Expenses</div>
+      <div class="more-item" onclick="showTab('stock',this);toggleMore()">&#128230; My Stock</div>
+      <div class="more-item" onclick="showTab('apps',this);toggleMore()">&#128221; Applications</div>
+      <div class="more-item" onclick="showTab('report',this);toggleMore()">&#128196; Daily Report</div>
+    </div>
+  </button>
+</nav>
+</div>
+
+<!-- ===== DATA ===== -->
+<script type="application/json" id="d-products">[{"id": 1, "sku": "OD-109971-0100", "name": "Oxarise Oral Drench 100ml", "category": "ORAL LIQUID", "brand": "OXARISE", "price": 145}, {"id": 2, "sku": "OD-109971-0500", "name": "Oxarise Oral Drench 500ml", "category": "ORAL LIQUID", "brand": "OXARISE", "price": 520}, {"id": 3, "sku": "OD-109971-1000", "name": "Oxarise Oral Drench 1000ml", "category": "ORAL LIQUID", "brand": "OXARISE", "price": 930}, {"id": 4, "sku": "OD-109972-0100", "name": "Endo-Try Oral Drench 100ml", "category": "ORAL LIQUID", "brand": "ENDO-TRY", "price": 205}, {"id": 5, "sku": "OD-109972-0250", "name": "Endo-Try Oral Drench 250ml", "category": "ORAL LIQUID", "brand": "ENDO-TRY", "price": 415}, {"id": 6, "sku": "OD-109972-0500", "name": "Endo-Try Oral Drench 500ml", "category": "ORAL LIQUID", "brand": "ENDO-TRY", "price": 720}, {"id": 7, "sku": "OD-109972-1000", "name": "Endo-Try Oral Drench 1000ml", "category": "ORAL LIQUID", "brand": "ENDO-TRY", "price": 1330}, {"id": 8, "sku": "OD-109975-0100", "name": "Revozan Oral Drench 100ml", "category": "ORAL LIQUID", "brand": "REVOZAN", "price": 155}, {"id": 9, "sku": "OD-109975-0250", "name": "Revozan Oral Drench 250ml", "category": "ORAL LIQUID", "brand": "REVOZAN", "price": 345}, {"id": 10, "sku": "OD-109975-0500", "name": "Revozan Oral Drench 500ml", "category": "ORAL LIQUID", "brand": "REVOZAN", "price": 625}, {"id": 11, "sku": "OD-109975-1000", "name": "Revozan Oral Drench 1000ml", "category": "ORAL LIQUID", "brand": "REVOZAN", "price": 1160}, {"id": 12, "sku": "OD-109977-0100", "name": "Bio-Fluke DS Oral Drench 100ml", "category": "ORAL LIQUID", "brand": "BIO-FLUKE", "price": 240}, {"id": 13, "sku": "OD-109977-0500", "name": "Bio-Fluke DS Oral Drench 500ml", "category": "ORAL LIQUID", "brand": "BIO-FLUKE", "price": 995}, {"id": 14, "sku": "OD-109977-1000", "name": "Bio-Fluke DS Oral Drench 1000ml", "category": "ORAL LIQUID", "brand": "BIO-FLUKE", "price": 1900}, {"id": 15, "sku": "OD-109978-0100", "name": "Alborise-10% Oral Drench 100ml", "category": "ORAL LIQUID", "brand": "ALBORISE", "price": 202}, {"id": 16, "sku": "OD-109978-0500", "name": "Alborise-10% Oral Drench 500ml", "category": "ORAL LIQUID", "brand": "ALBORISE", "price": 787}, {"id": 17, "sku": "OD-109978-1000", "name": "Alborise-10% Oral Drench 1000ml", "category": "ORAL LIQUID", "brand": "ALBORISE", "price": 1524}, {"id": 18, "sku": "OD-109979-0100", "name": "Alborise-2.5% Oral Drench 100ml", "category": "ORAL LIQUID", "brand": "ALBORISE", "price": 123}, {"id": 19, "sku": "OD-109979-0500", "name": "Alborise-2.5% Oral Drench 500ml", "category": "ORAL LIQUID", "brand": "ALBORISE", "price": 415}, {"id": 20, "sku": "OD-109979-1000", "name": "Alborise-2.5% Oral Drench 1000ml", "category": "ORAL LIQUID", "brand": "ALBORISE", "price": 710}, {"id": 21, "sku": "OD-109985-0100", "name": "Triverzole Oral Drench 100ml", "category": "ORAL LIQUID", "brand": "TRIVERZOLE", "price": 625}, {"id": 22, "sku": "OD-109985-0500", "name": "Triverzole Oral Drench 500ml", "category": "ORAL LIQUID", "brand": "TRIVERZOLE", "price": 2530}, {"id": 23, "sku": "OD-109985-1000", "name": "Triverzole Oral Drench 1000ml", "category": "ORAL LIQUID", "brand": "TRIVERZOLE", "price": 4750}, {"id": 24, "sku": "OD-111189-0100", "name": "Sco-rise Oral Suspension 100ml", "category": "ORAL LIQUID", "brand": "SCO-RISE", "price": 175}, {"id": 25, "sku": "OD-111189-0500", "name": "Sco-rise Oral Suspension 500ml", "category": "ORAL LIQUID", "brand": "SCO-RISE", "price": 725}, {"id": 26, "sku": "OD-122902-0100", "name": "Revozan Oral Drench 100ml", "category": "ORAL LIQUID", "brand": "REVOZAN", "price": 155}, {"id": 27, "sku": "OD-122902-0250", "name": "Revozan Oral Drench 250ml", "category": "ORAL LIQUID", "brand": "REVOZAN", "price": 345}, {"id": 28, "sku": "OD-122902-0500", "name": "Revozan Oral Drench 500ml", "category": "ORAL LIQUID", "brand": "REVOZAN", "price": 625}, {"id": 29, "sku": "OD-122902-1000", "name": "Revozan Oral Drench 1000ml", "category": "ORAL LIQUID", "brand": "REVOZAN", "price": 1160}, {"id": 30, "sku": "OD-125623-0100", "name": "Micrise Oral Drench 100ml", "category": "ORAL LIQUID", "brand": "MICRISE", "price": 325}, {"id": 31, "sku": "OD-125623-0500", "name": "Micrise Oral Drench 500ml", "category": "ORAL LIQUID", "brand": "MICRISE", "price": 1310}, {"id": 32, "sku": "OD-125623-1000", "name": "Micrise Oral Drench 1000ml", "category": "ORAL LIQUID", "brand": "MICRISE", "price": 2450}, {"id": 33, "sku": "INJ-111191-0050", "name": "Tylorise-20% Injection 50ml", "category": "INJECTION", "brand": "TYLORISE", "price": 392}, {"id": 34, "sku": "INJ-111191-0100", "name": "Tylorise-20% Injection 100ml", "category": "INJECTION", "brand": "TYLORISE", "price": 640}, {"id": 35, "sku": "INJ-111193-0050", "name": "Mylarise-2% Injection 50ml", "category": "INJECTION", "brand": "MYLARISE", "price": 150}, {"id": 36, "sku": "INJ-111196-0050", "name": "Mylarise-0.75% Injection 50ml", "category": "INJECTION", "brand": "MYLARISE", "price": 92}, {"id": 37, "sku": "INJ-111200-0010", "name": "Enrise-10% Injection 10ml", "category": "INJECTION", "brand": "ENRISE", "price": 70}, {"id": 38, "sku": "INJ-111200-0050", "name": "Enrise-10% Injection 50ml", "category": "INJECTION", "brand": "ENRISE", "price": 156}, {"id": 39, "sku": "INJ-111200-0100", "name": "Enrise-10% Injection 100ml", "category": "INJECTION", "brand": "ENRISE", "price": 292}, {"id": 40, "sku": "INJ-111203-0010", "name": "Micrise-2% Injection 10ml", "category": "INJECTION", "brand": "MICRISE", "price": 100}, {"id": 41, "sku": "INJ-111203-0050", "name": "Micrise-2% Injection 50ml", "category": "INJECTION", "brand": "MICRISE", "price": 290}, {"id": 42, "sku": "INJ-111203-0100", "name": "Micrise-2% Injection 100ml", "category": "INJECTION", "brand": "MICRISE", "price": 530}, {"id": 43, "sku": "INJ-111206-0010", "name": "Micrise-1% Injection 10ml", "category": "INJECTION", "brand": "MICRISE", "price": 73}, {"id": 44, "sku": "INJ-111206-0050", "name": "Micrise-1% Injection 50ml", "category": "INJECTION", "brand": "MICRISE", "price": 200}, {"id": 45, "sku": "INJ-111206-0100", "name": "Micrise-1% Injection 100ml", "category": "INJECTION", "brand": "MICRISE", "price": 330}, {"id": 46, "sku": "INJ-111209-0010", "name": "Bio Milty Injection 10ml", "category": "INJECTION", "brand": "BIO MILTY", "price": 80}, {"id": 47, "sku": "INJ-111209-0050", "name": "Bio Milty Injection 50ml", "category": "INJECTION", "brand": "BIO MILTY", "price": 213}, {"id": 48, "sku": "INJ-111209-0100", "name": "Bio Milty Injection 100ml", "category": "INJECTION", "brand": "BIO MILTY", "price": 353}, {"id": 49, "sku": "INJ-112178-0010", "name": "Gtrise Injection 10ml", "category": "INJECTION", "brand": "GTRISE", "price": 115}, {"id": 50, "sku": "INJ-112178-0050", "name": "Gtrise Injection 50ml", "category": "INJECTION", "brand": "GTRISE", "price": 360}, {"id": 51, "sku": "INJ-112178-0100", "name": "Gtrise Injection 100ml", "category": "INJECTION", "brand": "GTRISE", "price": 660}, {"id": 52, "sku": "INJ-112181-0010", "name": "Bio-Hepa Injection 10ml", "category": "INJECTION", "brand": "BIO-HEPA", "price": 120}, {"id": 53, "sku": "INJ-112181-0050", "name": "Bio-Hepa Injection 50ml", "category": "INJECTION", "brand": "BIO-HEPA", "price": 340}, {"id": 54, "sku": "INJ-112181-0100", "name": "Bio-Hepa Injection 100ml", "category": "INJECTION", "brand": "BIO-HEPA", "price": 645}, {"id": 55, "sku": "INJ-113397-0050", "name": "Ketorise Injection 50ml", "category": "INJECTION", "brand": "KETORISE", "price": 340}, {"id": 56, "sku": "INJ-113397-0100", "name": "Ketorise Injection 100ml", "category": "INJECTION", "brand": "KETORISE", "price": 645}, {"id": 57, "sku": "INJ-113399-0010", "name": "Levamycin-20% Injection 10ml", "category": "INJECTION", "brand": "LEVAMYCIN", "price": 98}, {"id": 58, "sku": "INJ-113399-0050", "name": "Levamycin-20% Injection 50ml", "category": "INJECTION", "brand": "LEVAMYCIN", "price": 265}, {"id": 59, "sku": "INJ-113399-0100", "name": "Levamycin-20% Injection 100ml", "category": "INJECTION", "brand": "LEVAMYCIN", "price": 405}, {"id": 60, "sku": "INJ-113403-0050", "name": "Levamycin-5% Injection 50ml", "category": "INJECTION", "brand": "LEVAMYCIN", "price": 100}, {"id": 61, "sku": "INJ-113403-0100", "name": "Levamycin-5% Injection 100ml", "category": "INJECTION", "brand": "LEVAMYCIN", "price": 172}, {"id": 62, "sku": "INJ-122919-0050", "name": "Cobalux 250mcg Injection 50ml", "category": "INJECTION", "brand": "COBALUX", "price": 82}, {"id": 63, "sku": "INJ-122919-0100", "name": "Cobalux 250mcg Injection 100ml", "category": "INJECTION", "brand": "COBALUX", "price": 150}, {"id": 64, "sku": "INJ-122921-0010", "name": "Fluxilife Injection 10ml", "category": "INJECTION", "brand": "FLUXILIFE", "price": 117}, {"id": 65, "sku": "INJ-122921-0050", "name": "Fluxilife Injection 50ml", "category": "INJECTION", "brand": "FLUXILIFE", "price": 345}, {"id": 66, "sku": "INJ-122921-0100", "name": "Fluxilife Injection 100ml", "category": "INJECTION", "brand": "FLUXILIFE", "price": 655}, {"id": 67, "sku": "INJ-122924-0010", "name": "Mexulon Injection 10ml", "category": "INJECTION", "brand": "MEXULON", "price": 200}, {"id": 68, "sku": "INJ-122924-0050", "name": "Mexulon Injection 50ml", "category": "INJECTION", "brand": "MEXULON", "price": 660}, {"id": 69, "sku": "INJ-122924-0100", "name": "Mexulon Injection 100ml", "category": "INJECTION", "brand": "MEXULON", "price": 1240}, {"id": 70, "sku": "INJ-125627-0100", "name": "Mylarise 0.75% Injection 100ml", "category": "INJECTION", "brand": "MYLARISE", "price": 148}, {"id": 71, "sku": "INJ-125848-0010", "name": "Enrise-20.5% Injection 10ml", "category": "INJECTION", "brand": "ENRISE", "price": 105}, {"id": 72, "sku": "INJ-125849-0050", "name": "Enrise-20.5% Injection 50ml", "category": "INJECTION", "brand": "ENRISE", "price": 250}, {"id": 73, "sku": "INJ-125850-0100", "name": "Enrise-20.5% Injection 100ml", "category": "INJECTION", "brand": "ENRISE", "price": 455}, {"id": 74, "sku": "INJ-128662-0100", "name": "ADE Injection 100ml", "category": "INJECTION", "brand": "ADE", "price": 651}, {"id": 75, "sku": "INJ-128665-0010", "name": "Ketorise Injection 10ml", "category": "INJECTION", "brand": "KETORISE", "price": 105}, {"id": 76, "sku": "PWD-111222-00012", "name": "Bio-Oar Powder 12gm", "category": "ORAL POWDER", "brand": "BIO-OAR", "price": 75}, {"id": 77, "sku": "PWD-111223-01000", "name": "BR Minerals Powder 1000gm", "category": "ORAL POWDER", "brand": "BR MINERALS", "price": 735}, {"id": 78, "sku": "PWD-111223-25000", "name": "BR Minerals Powder 25Kg", "category": "ORAL POWDER", "brand": "BR MINERALS", "price": 12750}, {"id": 79, "sku": "PWD-111224-00010", "name": "Ribofon Powder 10gm", "category": "ORAL POWDER", "brand": "RIBOFON", "price": 33}, {"id": 80, "sku": "PWD-111224-01000", "name": "Ribofon Powder 1000gm", "category": "ORAL POWDER", "brand": "RIBOFON", "price": 2200}]</script>
+<script type="application/json" id="d-customers">[{"id": 1, "name": "ABBAS NAVEED PHARMACY PATTOKI", "salesMan": "BILAL AHMED", "region": "South Punjab", "city": "Pattoki", "mobile": "", "saleType": "Normal Distributor", "address": "Shop No. 01, Jaja Road Near Nawab Bibi Hospital, Sarai Mughal, Pattoki"}, {"id": 2, "name": "AHAD PHARMA LAYYAH", "salesMan": "", "region": "South Punjab", "city": "Layyah", "mobile": "", "saleType": "Normal Distributor", "address": "Near NBP, Opposite Makka Traders, Fateh Pur Road Chowk Azam Tehsil & District Layyah"}, {"id": 3, "name": "AL-HAMD VETERINARY STORE DI KHAN", "salesMan": "Athar Ahsan", "region": "South Punjab", "city": "D I Khan", "mobile": "", "saleType": "Normal Distributor", "address": "Near Purani Sabzi Mandi South Circular Road D I Khan"}, {"id": 4, "name": "AMVET INTEMATION DISTRIBUTION SAHIWAL", "salesMan": "Hafiz Tahir", "region": "South Punjab", "city": "Sahiwal", "mobile": "", "saleType": "Normal Distributor", "address": "Office No.30-31, Royal PalmGarden, Near McDonals, Sahiwal"}, {"id": 5, "name": "ASIF VET MEDICAL STORE FAISALABAD", "salesMan": "Mohsin Javed", "region": "South Punjab", "city": "Faisalabad", "mobile": "", "saleType": "Normal Distributor", "address": "Rubani Bankers Colony, St # 03, People's Colony # 02, Faisalabad"}, {"id": 6, "name": "FAHEEM MEDICINE COMPANY MIANWALI", "salesMan": "", "region": "South Punjab", "city": "Mianwali", "mobile": "", "saleType": "Normal Distributor", "address": "MOHALLAH KHANKI KHEL, NEAR AYESHA MASJID, MIANWALI  MIANWALI"}, {"id": 7, "name": "FAZAL AHMED MEDICINE COMPANY DAHRANWALA", "salesMan": "", "region": "South Punjab", "city": "Dahranwala", "mobile": "", "saleType": "Normal Distributor", "address": "Yateem Wala Chowk, Dahranwala, Tehsil Chistian, District Bahawalnagar"}, {"id": 8, "name": "GANJ SHAKAR VETERINARY MEDICAL STORE SAHIWAL", "salesMan": "", "region": "South Punjab", "city": "SAHIWAL", "mobile": "", "saleType": "Normal Distributor", "address": "Sarwar Chowk, District Sahiwal"}, {"id": 9, "name": "HAFIZ SHIFA KHANA HAIWANAT BANNU", "salesMan": "Wajahat Ali Shah", "region": "South Punjab", "city": "Bannu", "mobile": "", "saleType": "Normal Distributor", "address": "Maal Mandi Bannu"}, {"id": 10, "name": "HAJWERI MEDICAL STORE SHEIKHUPURA", "salesMan": "Zahid Nafees", "region": "South Punjab", "city": "Sheikhupura", "mobile": "", "saleType": "Normal Distributor", "address": "Civil Hospital Road, Sangla Hill, District Nankana Sahib Sheikhupura"}, {"id": 11, "name": "IRFAN TRADERS RAJANPUR", "salesMan": "Muhammad Rashid", "region": "South Punjab", "city": "Rajanpur", "mobile": "", "saleType": "Normal Distributor", "address": "Indus Highway Road, Nearby Piala Hotel, Rajanpur, Tehsil & District Rajanpur"}, {"id": 12, "name": "ISMAEL TRADERS MULTAN", "salesMan": "", "region": "South Punjab", "city": "Multan", "mobile": "", "saleType": "Normal Distributor", "address": "Opp. Khan Petroleum (PSO Pump) Hassanabad Gate No. 1, Khanewal Road Multan"}, {"id": 13, "name": "JAFAR PHARMA LAYYAH", "salesMan": "Rizwan Abbas", "region": "South Punjab", "city": "Layyah", "mobile": "", "saleType": "Normal Distributor", "address": "Chak No.123/tda, Canal Road Near Basti Alyani Chowk, Tehsil & District Layyah"}, {"id": 14, "name": "KH MEDICINE DISTRIBUTOR SAHIWAL", "salesMan": "Shehbaz Khan", "region": "South Punjab", "city": "Okara", "mobile": "", "saleType": "Normal Distributor", "address": "Right Side Unique CNG, Left Side, Tabarak Hotel, Main Pakpattan Road Tehsil & District Sahiwal"}, {"id": 15, "name": "KHAN DISTRIBUTION RAHIM YAR KHAN", "salesMan": "Sheraz Khalid", "region": "South Punjab", "city": "Rahim Yar Khan", "mobile": "", "saleType": "Normal Distributor", "address": "Opposite Hamza Petrol Pump 2 Nawakot, Tehsil Khanpur, District Rahim Yar Khan"}, {"id": 16, "name": "KISAN MEDICAL & VETERINARY STORE MUZAFFAR GARH", "salesMan": "Umar Khan", "region": "South Punjab", "city": "Muzaffargarh", "mobile": "", "saleType": "Normal Distributor", "address": "Opposite Sheikh House, Sherwani Chowk, Railway Road, Tehsil & District Muzaffargarh"}, {"id": 17, "name": "LIFE CARE MEDICINE COMPANY BAHAWALPUR", "salesMan": "Fayyaz Hussain", "region": "South Punjab", "city": "Bahawalpur", "mobile": "", "saleType": "Normal Distributor", "address": "House no. 52, Golistan e Johar Town, Main Abbasia Town Road, Bahawalpur"}, {"id": 18, "name": "MALIK TRADERS RENALA KHURD", "salesMan": "", "region": "South Punjab", "city": "Renala Khurd", "mobile": "", "saleType": "Normal Distributor", "address": "Chak no 19/D P/O Shergarh Tehsil Depalpur District Okara"}, {"id": 19, "name": "MARKETING SAMPLES MID PUNJAB", "salesMan": "", "region": "South Punjab", "city": "Sahiwal", "mobile": "", "saleType": "Normal Distributor", "address": "Sahiwal"}, {"id": 20, "name": "MARKETING SAMPLES PUNJAB", "salesMan": "", "region": "South Punjab", "city": "Multan", "mobile": "", "saleType": "Normal Distributor", "address": "Multan"}, {"id": 21, "name": "NISAR VETERINARY STORE KACHA KHUHH", "salesMan": "", "region": "South Punjab", "city": "Kacha Khuhh", "mobile": "", "saleType": "Normal Distributor", "address": "Kacha Kuhh"}, {"id": 22, "name": "NIZAMI PHARMA CHOWK AZAM", "salesMan": "", "region": "South Punjab", "city": "Chowk Azam", "mobile": "", "saleType": "Normal Distributor", "address": "Fatehpur Road Near U Bank Chowk Azam"}, {"id": 23, "name": "RAJPOOT ENTERPRISES PAKPATAN", "salesMan": "", "region": "South Punjab", "city": "Pakpatan", "mobile": "", "saleType": "Normal Distributor", "address": "Usmaniya Hotel Sahiwal Near Total Pump Movie Point 135/9l Bypass, PAKPATAN"}, {"id": 24, "name": "REHMANI MEDICINE COMPANY LODHRAN", "salesMan": "", "region": "South Punjab", "city": "Lodhran", "mobile": "", "saleType": "Normal Distributor", "address": "AZIZ TOWN LODHRAN"}, {"id": 25, "name": "SALMAN BROTHERS MULTAN", "salesMan": "Shehzad Haider", "region": "South Punjab", "city": "Multan", "mobile": "", "saleType": "Normal Distributor", "address": "Town Hall Medicine Market Ghanta Ghar Multan"}, {"id": 26, "name": "SB TRADERS R Y K", "salesMan": "", "region": "South Punjab", "city": "Rahim Yar Khan", "mobile": "", "saleType": "Normal Distributor", "address": "Makhdoom Altaf Canal Road R Y K"}, {"id": 27, "name": "SHAFI VETERINARY MEDICAL STORE SAHIWAL", "salesMan": "", "region": "South Punjab", "city": "Sahiwal", "mobile": "", "saleType": "Normal Distributor", "address": "College Road, Chichawatni, District Sahiwal."}, {"id": 28, "name": "SHAHID BILAL VETERINARY SERVICES TAUNSA SHARIF", "salesMan": "Mubashir Ali", "region": "South Punjab", "city": "Taunsa Sharif", "mobile": "", "saleType": "Normal Distributor", "address": "Village Nari Janoobi Post Office Nari Janoobi Tehsil Taunsa"}, {"id": 29, "name": "SHEIKH MEDICINE & VETERINARY STORE D G KHAN", "salesMan": "Sheikh Danish Ali", "region": "South Punjab", "city": "D G Khan", "mobile": "", "saleType": "Normal Distributor", "address": "Shop # 17, Block A, Railway Road, Opposite Civil Veterinary Hospital, Dera Ghazi Khan"}, {"id": 30, "name": "SIKANDAR PHARMACY FATEHPUR", "salesMan": "", "region": "South Punjab", "city": "Fatehpur", "mobile": "", "saleType": "Normal Distributor", "address": "MM Road Fatehpur"}, {"id": 31, "name": "SKYER PHARMA VEHARI", "salesMan": "Amir Shehzad", "region": "South Punjab", "city": "Vehari", "mobile": "", "saleType": "Normal Distributor", "address": ""}, {"id": 32, "name": "T&H TRADERS SAHIWAL", "salesMan": "", "region": "South Punjab", "city": "Sahiwal", "mobile": "", "saleType": "Normal Distributor", "address": "Gulshan e Zahra, house #01, 90/9:l, Sahiwal."}, {"id": 33, "name": "TALHA MEDICOSE SHORKOT", "salesMan": "", "region": "South Punjab", "city": "Shorkot", "mobile": "", "saleType": "Normal Distributor", "address": "Multan Road Shorkot"}, {"id": 34, "name": "UMAIR TRADERS MOHSIN WAL KHANEWAL", "salesMan": "Muhammad Naeem", "region": "South Punjab", "city": "Khanewal", "mobile": "", "saleType": "Normal Distributor", "address": "Mohsin Wal Khanewal"}, {"id": 35, "name": "UMAR KHAN MULTAN", "salesMan": "Umar Khan", "region": "South Punjab", "city": "Multan", "mobile": "", "saleType": "Normal Distributor", "address": "Multan"}, {"id": 36, "name": "YAQUB MEDICINE COMPANY BHAKKAR", "salesMan": "Waqar Hussain", "region": "South Punjab", "city": "Bhakkar", "mobile": "", "saleType": "Normal Distributor", "address": "Near MC High School Bhakkar"}, {"id": 37, "name": "ZEESHAN UMAR MUX", "salesMan": "Zeeshan Umar", "region": "South Punjab", "city": "Multan", "mobile": "", "saleType": "Normal Distributor", "address": "Shah Rukn E Alam Colony, Multan"}, {"id": 38, "name": "ZEESHAN UMAR SAMPLES MULTAN", "salesMan": "", "region": "South Punjab", "city": "Multan", "mobile": "", "saleType": "Normal Distributor", "address": "Shah Rukn E Alam Colony, Multan"}, {"id": 39, "name": "ADVANCE MEDICOSE ISLAMKOT", "salesMan": "", "region": "Sindh", "city": "Islamkot", "mobile": "", "saleType": "Normal Distributor", "address": "Opposite Main Boys School Islamkot"}, {"id": 40, "name": "AL MEHRAN VETERNIARY STORE K.N SHAH", "salesMan": "Qurban Ali Gaho", "region": "Sindh", "city": "Dadu", "mobile": "", "saleType": "Normal Distributor", "address": "Khairpur Nathan Shah District Dadu"}, {"id": 41, "name": "AL SHIFA MEDICAL STORE SANGHAR", "salesMan": "Javed Khan", "region": "Sindh", "city": "Sanghar", "mobile": "", "saleType": "Normal Distributor", "address": "Gujri Taluka, Sanghar"}, {"id": 42, "name": "AMAN KUMAR KARACHI", "salesMan": "Aman Kumar", "region": "Sindh", "city": "Karachi", "mobile": "", "saleType": "Normal Distributor", "address": "Karachi"}, {"id": 43, "name": "AMAN KUMAR SAMPLES", "salesMan": "", "region": "Sindh", "city": "Karachi", "mobile": "", "saleType": "Normal Distributor", "address": "Karachi"}, {"id": 44, "name": "ASLAM HUSSAIN JAFRI HYDERABAD", "salesMan": "Ashfaque Hussain", "region": "Sindh", "city": "Hyderabad", "mobile": "", "saleType": "Normal Distributor", "address": "Office, 105, Bs-3, Block-17, F.B Area Karachi, Karachi Central Gulberg Town, Hyderabad"}, {"id": 45, "name": "AWAMI MEDICAL STORE ISLAMKOT", "salesMan": "", "region": "Sindh", "city": "Islamkot", "mobile": "", "saleType": "Normal Distributor", "address": "Near Meenhal Shah Ghazi Market, Islamkot District Tharparkar"}, {"id": 46, "name": "BHITTAI MEDICAL STORE KARACHI", "salesMan": "Ajeet Kumar", "region": "Sindh", "city": "Karachi", "mobile": "", "saleType": "Normal Distributor", "address": "Shop # 02, Bohri Market, Road No. 09, Cattle Colony, Karachi"}, {"id": 47, "name": "BHITTAI VETERINARY SERVICE AND CLINIC HYDERABAD", "salesMan": "", "region": "Sindh", "city": "Hyderabad", "mobile": "", "saleType": "Normal Distributor", "address": "Cattle Colony Hyderbabad"}, {"id": 48, "name": "CHANNA VETERINARY STORE BADIN", "salesMan": "", "region": "Sindh", "city": "Badin", "mobile": "", "saleType": "Normal Distributor", "address": "Opposite Habib Bank, Quaid e Azam Road, Badin"}, {"id": 49, "name": "GULJEES VETERINARY STORE THATTA", "salesMan": "Rakesh Kumar", "region": "Sindh", "city": "Thatta", "mobile": "", "saleType": "Normal Distributor", "address": "Near Jahanzaib Hotel Thatta"}, {"id": 50, "name": "ISMAEL KHAN HYDERABAD", "salesMan": "", "region": "Sindh", "city": "Hyderabad", "mobile": "", "saleType": "Normal Distributor", "address": "H # 14, Golden Colony Fareed Elahi, Near Govt. College Kali Mori, Al Haram Masjid, Hyderabad"}, {"id": 51, "name": "ISMAEL KHAN HYDERABAD T.M", "salesMan": "", "region": "Sindh", "city": "Hyderabad", "mobile": "", "saleType": "Normal Distributor", "address": "H # 14, Golden Colony Fareed Elahi, Near Govt. College Kali Mori, Al Haram Masjid, Hyderabad"}, {"id": 52, "name": "KG ENTERPRISES KARACHI", "salesMan": "Dr Shiv Kumar", "region": "Sindh", "city": "Karachi", "mobile": "", "saleType": "Normal Distributor", "address": "Gulshan-e-Hadeed, Phase 1, Karachi, Malir, Bin Qasim Town, Karachi"}, {"id": 53, "name": "LOVE MEDICAL KARACHI", "salesMan": "", "region": "Sindh", "city": "Karachi", "mobile": "", "saleType": "Normal Distributor", "address": "Bhains Colony Road 6, Near Nagori Kaita, Karachi"}, {"id": 54, "name": "MAKKI MEDICAL STORE NAWABSHAH", "salesMan": "Habib Ur Rehman", "region": "Sindh", "city": "Nawabshah", "mobile": "", "saleType": "Normal Distributor", "address": "Mohni Bazar Nawabshah"}, {"id": 55, "name": "MARKETING SAMPLES SINDH", "salesMan": "", "region": "Sindh", "city": "Karachi", "mobile": "", "saleType": "Normal Distributor", "address": "Karachi"}, {"id": 56, "name": "MEHRAN MEDICOSE MIRPUR KHAS", "salesMan": "", "region": "Sindh", "city": "Mirpurkhas", "mobile": "", "saleType": "Normal Distributor", "address": "Medicine Wholsale Market, Shop #03, Chaki Para Mirpurkhas"}, {"id": 57, "name": "MEMON VETERINARY STORE DADU", "salesMan": "", "region": "Sindh", "city": "Dadu", "mobile": "", "saleType": "Normal Distributor", "address": "Sita Road District Dadu"}, {"id": 58, "name": "MUHAMMAD HUSSAIN ABBAS KARACHI", "salesMan": "Muslim Abbas", "region": "Sindh", "city": "Karachi", "mobile": "", "saleType": "Normal Distributor", "address": "Flat No 410, Block-A Iqra City, Gulshan-E-Iqbal Karachi, Karachi East"}, {"id": 59, "name": "MUHAMMAD TAHA VETERINARY STORE SHIKARPUR", "salesMan": "Khalid Hussain", "region": "Sindh", "city": "Shikarpur", "mobile": "", "saleType": "Normal Distributor", "address": "Goth, Mureed Sethar, Taluka Khanpur, Shikarpur"}, {"id": 60, "name": "MUZAMIL TRADER KAKAR", "salesMan": "", "region": "Sindh", "city": "Dadu", "mobile": "", "saleType": "Normal Distributor", "address": "Kakar Dadu"}, {"id": 61, "name": "SAAF VETERINARY NETWORK SUKKUR", "salesMan": "Shabir Ahmed", "region": "Sindh", "city": "Sukkur", "mobile": "", "saleType": "Normal Distributor", "address": "Shop #41, City Plaza, Shaheed Gunj, Clock Tower, Sukkur  Sukkur"}, {"id": 62, "name": "SAWAI MAL THARPARKAR", "salesMan": "Sawai Mal", "region": "Sindh", "city": "Umerkot", "mobile": "", "saleType": "Normal Distributor", "address": "Shevani Ward, 311, Umerkot, Tharparkar"}, {"id": 63, "name": "SURESH KUMAR MALHI MPK", "salesMan": "", "region": "Sindh", "city": "Mirpurkhas", "mobile": "", "saleType": "Normal Distributor", "address": "Sona Solar, Hashim Nager, Mian Umerkot Road, Mirpurkhas"}, {"id": 64, "name": "TAWAKAL MEDICOSE MITHI", "salesMan": "Shivlal", "region": "Sindh", "city": "Mithi", "mobile": "", "saleType": "Normal Distributor", "address": "Neat Bus Terminal Court Road Mithi"}, {"id": 65, "name": "TAWAKAL TRADERS BADIN", "salesMan": "Amjad Ali", "region": "Sindh", "city": "Badin", "mobile": "", "saleType": "Normal Distributor", "address": "Village Abdul Rehman Chandio, PO Badin"}, {"id": 66, "name": "TAYYAB TRADERS SANGHAR", "salesMan": "", "region": "Sindh", "city": "Sanghar", "mobile": "", "saleType": "Normal Distributor", "address": "17km away from Nawabshah, at village Suleman Dahri, main Nawabshah Shah, Sanghar"}, {"id": 67, "name": "UNIQUE PHARMA LANDHI KARACHI", "salesMan": "Shehzad Panhwar", "region": "Sindh", "city": "Landhi", "mobile": "", "saleType": "Normal Distributor", "address": "Plot No. 132/A, Road No. 08, Cattle Colony, Landhi, Karachi"}, {"id": 68, "name": "ZEESHAN VETERINARY STORE THUL", "salesMan": "Muhsin Tariq", "region": "Sindh", "city": "Thul", "mobile": "", "saleType": "Normal Distributor", "address": "Station Road Thul, District Jacobabad THUL"}, {"id": 69, "name": "ABDULLAH VETERINARY MEDICINE STORE TALAGANG", "salesMan": "Abu Bakar Attock", "region": "Upper Punjab", "city": "Talagang", "mobile": "", "saleType": "Normal Distributor", "address": "Near Office Union Council Main Talagang Road Bharpur Tehsil Kallar Kahar District Chakwal"}, {"id": 70, "name": "AL BASIT MEDICAL STORE RAWALPINDI", "salesMan": "", "region": "Upper Punjab", "city": "Rawalpindi", "mobile": "", "saleType": "Normal Distributor", "address": "Shop No. D 336, Main Bohar Bazar, Near Lal Haveli, Rawalpindi"}, {"id": 71, "name": "AL-REHMAT VETERINARY SILANWALI", "salesMan": "", "region": "Upper Punjab", "city": "Silanwali", "mobile": "", "saleType": "Normal Distributor", "address": "Committee Road Near Taj Masjid, Silanwali"}, {"id": 72, "name": "CHAND VETERINARY STORE SHEIKHUPURA", "salesMan": "Yousaf Saeed", "region": "Upper Punjab", "city": "Sheikhupura", "mobile": "", "saleType": "Normal Distributor", "address": "Saeed Chowk Saggian Byepass Tehsil Ferozwala District Sheikhupura"}, {"id": 73, "name": "CHAUDHARY BROTHERS TRADERS ABBOTABAD", "salesMan": "Inham Ullah", "region": "Upper Punjab", "city": "Abbotabad", "mobile": "", "saleType": "Normal Distributor", "address": "Abbotabad"}, {"id": 74, "name": "CHAUDHARY BROTHERS TRADERS RAWALPINDI", "salesMan": "Talha Saeed", "region": "Upper Punjab", "city": "Rawalpindi", "mobile": "", "saleType": "Normal Distributor", "address": "Girja Road Chak Jalaludin Near Pso Pump, District Rawalpindi"}, {"id": 75, "name": "FASIH VETERINARY STORE KOTLI", "salesMan": "", "region": "Upper Punjab", "city": "Kotli", "mobile": "", "saleType": "Normal Distributor", "address": "Near D.H.Q Hospital Gate, Tehsil & Dist. Kotli, Azad Kashmir"}, {"id": 76, "name": "HAYAT VETERINARY DISTRIBUTORS SARGODHA", "salesMan": "Muhammad Zain", "region": "Upper Punjab", "city": "Sargodha", "mobile": "", "saleType": "Normal Distributor", "address": "SHOP NO. 32 & 33, OPPOSITE AKBAR SWEET AND BAKERS, NOORI GATE CHOWK, SARGODHA"}, {"id": 77, "name": "HUMAYUN HUSSAIN BUTT", "salesMan": "Humayun Hussain", "region": "Upper Punjab", "city": "Multan", "mobile": "", "saleType": "Normal Distributor", "address": "Multan"}, {"id": 78, "name": "Humayun Hussain Samples Multan", "salesMan": "", "region": "Upper Punjab", "city": "Multan", "mobile": "", "saleType": "Normal Distributor", "address": "Multan"}, {"id": 79, "name": "KASHMIR V HAJIRA S", "salesMan": "", "region": "Upper Punjab", "city": "Hajira", "mobile": "", "saleType": "Normal Distributor", "address": "Hajira"}, {"id": 80, "name": "M.H VETERINARY & AGRO STORE SKARDU", "salesMan": "", "region": "Upper Punjab", "city": "Skardu", "mobile": "", "saleType": "Normal Distributor", "address": "Radio Pakistan Chowk Skardu"}, {"id": 81, "name": "MARKETING SAMPLES UPPER PUNJAB", "salesMan": "", "region": "Upper Punjab", "city": "Multan", "mobile": "", "saleType": "Normal Distributor", "address": "Multan"}, {"id": 82, "name": "QUDDOOS MEDICINE COMPANY JHANG", "salesMan": "MUHAMMAD HASNAIN", "region": "Upper Punjab", "city": "Jhang", "mobile": "", "saleType": "Normal Distributor", "address": "Near Ghousia Masjid Jogia Wali, Mohalla Jogia Wala, Kutwali Road, Jhang"}, {"id": 83, "name": "ABDUL SATAR MEDICINE CENTER HAJIPUR", "salesMan": "", "region": "MD Direct", "city": "Hajipur", "mobile": "", "saleType": "Normal Distributor", "address": "Hajipur"}, {"id": 84, "name": "ADEEL VETERINARY STORE KOT ADDU", "salesMan": "", "region": "MD Direct", "city": "Kot Addu", "mobile": "", "saleType": "Normal Distributor", "address": "Near Post Office Kot Addu"}, {"id": 85, "name": "ALI VET CLINIC MANGORA SWAT", "salesMan": "AJMAL KHAN", "region": "MD Direct", "city": "Mangora", "mobile": "", "saleType": "Normal Distributor", "address": "Gulshan Chowk Mian Ganun Mohalla Amrason Market Mangora Swat"}, {"id": 86, "name": "AL-MAJEED VETERINARY & MEDICAL STORE RENALA KHURD", "salesMan": "", "region": "MD Direct", "city": "Renala Khurd", "mobile": "", "saleType": "Normal Distributor", "address": "Sher Garh Road, Renala Khurd, Tehsil Renala Khurd, District Okara"}, {"id": 87, "name": "AL-MANSOOR VETERINARY STORE KHAAL DISTRICT DIR KPK", "salesMan": "", "region": "MD Direct", "city": "Khaal", "mobile": "", "saleType": "Normal Distributor", "address": "Main Bazar Khaal District Dir KPK"}, {"id": 88, "name": "ASHRAF VETERINARY CLINIC PISHIN", "salesMan": "", "region": "MD Direct", "city": "Pishin", "mobile": "", "saleType": "Normal Distributor", "address": "Near Post Office Band Road Pishin"}, {"id": 89, "name": "BANGASH TRADERS PESHAWER", "salesMan": "", "region": "MD Direct", "city": "Peshawer", "mobile": "", "saleType": "Normal Distributor", "address": "Fahad House Khan Abdul Qayum Khan Road, Zaheer Abad Peshawer"}, {"id": 90, "name": "BOLAN TRADERS ZHOB", "salesMan": "", "region": "MD Direct", "city": "Zhob", "mobile": "", "saleType": "Normal Distributor", "address": "Pir Ghafoor Shah Road Zhob"}, {"id": 91, "name": "DR BASHEER AHMAD KHUZDAR", "salesMan": "", "region": "MD Direct", "city": "Khuzdar", "mobile": "", "saleType": "Normal Distributor", "address": "Jhalawan Veterinary Clinic Gazgi Chowk Khuzdar"}, {"id": 92, "name": "DR MANSOOR FAZIL PUR", "salesMan": "", "region": "MD Direct", "city": "Fazilpur", "mobile": "", "saleType": "Normal Distributor", "address": "Mohsin Vet Clinic Near NBP Indus Road Fazil Pur"}, {"id": 93, "name": "DR. DAWOOD BAHAWALPUR", "salesMan": "", "region": "MD Direct", "city": "Bahawalpur", "mobile": "", "saleType": "Normal Distributor", "address": "Bahawalpur"}, {"id": 94, "name": "EDEN GREEN PHARMACY GUJRAT", "salesMan": "", "region": "MD Direct", "city": "Gujrat", "mobile": "", "saleType": "Normal Distributor", "address": "Service More Near Bilal Masjid GT Road Gujrat"}, {"id": 95, "name": "ENAYAT VETERINARY STORE CHOWK MUNDA", "salesMan": "", "region": "MD Direct", "city": "Chowk Munda", "mobile": "", "saleType": "Normal Distributor", "address": "Rangpur Road Chowk Munda"}, {"id": 96, "name": "FRIENDS VET STORE BAHAWALPUR", "salesMan": "", "region": "MD Direct", "city": "Bahawalpur", "mobile": "", "saleType": "Normal Distributor", "address": "Opposite Civil Veterinary Hospital Multani Gate Bahawalpur"}, {"id": 97, "name": "ISLAMABAD ENTERPRISES QUETTA", "salesMan": "MUHAMMAD NOMAN", "region": "MD Direct", "city": "Quetta", "mobile": "", "saleType": "Normal Distributor", "address": "Quarry Road Quetta"}, {"id": 98, "name": "MAQSOOD PHARMACY JHANG", "salesMan": "", "region": "MD Direct", "city": "Jhang", "mobile": "", "saleType": "Normal Distributor", "address": "Jail Road Near Al Yousaf CNG Jhang Sadar"}, {"id": 99, "name": "MATEEN MEDICOSE KOT ADDU", "salesMan": "", "region": "MD Direct", "city": "Kot Addu", "mobile": "", "saleType": "Normal Distributor", "address": "Peer Jagi More Chak No.518/TDA Tehsil Kot Addu District Muzaffargarh"}, {"id": 100, "name": "NEW ADNAN PHARMA TRADERS DG KHAN", "salesMan": "", "region": "MD Direct", "city": "D G Khan", "mobile": "", "saleType": "Normal Distributor", "address": "Railway Road DG Khan"}, {"id": 101, "name": "NOUMAN QUETTA SAMPLES", "salesMan": "", "region": "MD Direct", "city": "Quetta", "mobile": "", "saleType": "Normal Distributor", "address": ""}, {"id": 102, "name": "SAMI VETERINARY CLINIC RAKNI", "salesMan": "SAMI KHAN", "region": "MD Direct", "city": "Rakni", "mobile": "", "saleType": "Normal Distributor", "address": "Near Mill Street, Barkhan Road, Rakni"}, {"id": 103, "name": "SANA ULLAH BHATTI MUZAFFARGARH", "salesMan": "", "region": "MD Direct", "city": "Muzaffargarh", "mobile": "", "saleType": "Normal Distributor", "address": "Dg Khan Road Muzaffargarh"}, {"id": 104, "name": "SANA VET STORE LORALAI", "salesMan": "", "region": "MD Direct", "city": "Loralai", "mobile": "", "saleType": "Normal Distributor", "address": "Loralai"}, {"id": 105, "name": "SHIFA KHANA HAIWANAT QUETTA", "salesMan": "", "region": "MD Direct", "city": "Quetta", "mobile": "", "saleType": "Normal Distributor", "address": "Airport Road Quetta"}, {"id": 106, "name": "SIDDIQUE SONS PHARMACY NOWSHERA VIRKAN", "salesMan": "Asim Ali", "region": "MD Direct", "city": "Gujranwala", "mobile": "", "saleType": "Normal Distributor", "address": "Beside Irfan Mobile Shop Jagowala new Tehsil Nowshera Virkan"}, {"id": 107, "name": "SYED VETERINARY CLINIC LUNDI SYEDAN", "salesMan": "", "region": "MD Direct", "city": "Lundi Syedan", "mobile": "", "saleType": "Normal Distributor", "address": "Lundi Syedan"}, {"id": 108, "name": "WAHEED VET STORE QUETTA", "salesMan": "", "region": "MD Direct", "city": "Quetta", "mobile": "", "saleType": "Normal Distributor", "address": ""}, {"id": 109, "name": "WAQAS VETERINARY SERVICES BARKHAN BALOCHISTAN", "salesMan": "", "region": "MD Direct", "city": "Barkhan", "mobile": "", "saleType": "Normal Distributor", "address": "Barkhan Balochistan"}, {"id": 110, "name": "GOVT. SUPPLY MANGORA SWAT", "salesMan": "", "region": "MD Direct", "city": "Mangora", "mobile": "", "saleType": "Institutional Sales", "address": "Mangora, Swat"}, {"id": 111, "name": "LIVESTOCK & DAIRY DEVELOPMENT DEPARTMENT", "salesMan": "", "region": "MD Direct", "city": "Waziristan", "mobile": "", "saleType": "Institutional Sales", "address": "SOUTH WAZIRISTAN LOWER, WAZIRISTAN"}, {"id": 112, "name": "OFFICE OF THE DISTRICT DIRECTOR LIVESTOCK AND DAIRY DEVELOPMENT", "salesMan": "", "region": "MD Direct", "city": "Jamrud", "mobile": "", "saleType": "Institutional Sales", "address": "MERGED DISTRICT KHYBER AT JAMRUD"}, {"id": 113, "name": "OFFICE OF THE DISTRICT DIRECTOR LIVESTOCK PESHAWAR", "salesMan": "", "region": "MD Direct", "city": "Peshawer", "mobile": "", "saleType": "Institutional Sales", "address": "PESHAWAR"}, {"id": 114, "name": "THE DIRECTOR GENERAL (AH&ES) LIVESTOCK & DAIRY DEVELOPMENT DEPARTMENT", "salesMan": "", "region": "MD Direct", "city": "Quetta", "mobile": "", "saleType": "Institutional Sales", "address": "BALOCHISTAN, QUETTA"}, {"id": 115, "name": "BANGASH TRADERS PESHAWER T.M", "salesMan": "", "region": "MD Direct", "city": "Peshawer", "mobile": "", "saleType": "Contract Mfg.", "address": "Fahad House Khan Abdul Qayum Khan Road, Zaheer Abad Peshawer"}, {"id": 116, "name": "HAFIZ ABDUL AZIZ LAHORE", "salesMan": "", "region": "MD Direct", "city": "Lahore", "mobile": "", "saleType": "Contract Mfg.", "address": "321F Block C, Marghazar Colony, Multan Road, Lahore"}, {"id": 117, "name": "MASS VET ENTERPRISES KARACHI", "salesMan": "", "region": "MD Direct", "city": "Lahore", "mobile": "", "saleType": "Contract Mfg.", "address": "House # 304, Rafi Block, Street # 14, Bahria Town, Lahore"}, {"id": 118, "name": "TAD PHARMA MULTAN", "salesMan": "", "region": "MD Direct", "city": "Lahore", "mobile": "", "saleType": "Contract Mfg.", "address": "Saltanat House No 2, Bukhari Colony, M.A Jinnah Road, Multan"}, {"id": 119, "name": "HAMEED VETERINARY STORE RAKNI BARKHAN", "salesMan": "", "region": "MD Direct", "city": "Rakni", "mobile": "", "saleType": "Hameed", "address": "Rakni"}]</script>
+<script type="application/json" id="d-users">[{"id": 1, "username": "mazhar.admin", "password": "Adm!n@BR26", "role": "admin", "name": "Muhammad Mazhar ul Hassan", "region": "All"}, {"id": 2, "username": "manager.southpunjab", "password": "Gaw21!14", "role": "manager", "name": "Zeeshan Umar", "region": "South Punjab"}, {"id": 3, "username": "manager.upperpunjab", "password": "Baj39@81", "role": "manager", "name": "Humayun Butt", "region": "Upper Punjab"}, {"id": 4, "username": "manager.sindh", "password": "Jur38!85", "role": "manager", "name": "Aman Kumar", "region": "Sindh"}, {"id": 5, "username": "manager.mddirect", "password": "Lah99!53", "role": "manager", "name": "Abdul Wahid", "region": "MD Direct"}, {"id": 10, "username": "ajmal.khan", "password": "Lej53@21", "role": "officer", "name": "AJMAL KHAN", "region": "MD Direct"}, {"id": 11, "username": "abu.bakar.attock", "password": "Qap54$15", "role": "officer", "name": "Abu Bakar Attock", "region": "Upper Punjab"}, {"id": 12, "username": "ajeet.kumar", "password": "Suf58@80", "role": "officer", "name": "Ajeet Kumar", "region": "Sindh"}, {"id": 13, "username": "aman.kumar", "password": "Mup83#18", "role": "officer", "name": "Aman Kumar", "region": "Sindh"}, {"id": 14, "username": "amir.shehzad", "password": "Cem20#22", "role": "officer", "name": "Amir Shehzad", "region": "South Punjab"}, {"id": 15, "username": "amjad.ali", "password": "Qis91$30", "role": "officer", "name": "Amjad Ali", "region": "Sindh"}, {"id": 16, "username": "ashfaque.hussain", "password": "Pij95$99", "role": "officer", "name": "Ashfaque Hussain", "region": "Sindh"}, {"id": 17, "username": "asim.ali", "password": "Zay91#78", "role": "officer", "name": "Asim Ali", "region": "MD Direct"}, {"id": 18, "username": "athar.ahsan", "password": "Kes58$91", "role": "officer", "name": "Athar Ahsan", "region": "South Punjab"}, {"id": 19, "username": "bilal.ahmed", "password": "Wen17#14", "role": "officer", "name": "BILAL AHMED", "region": "South Punjab"}, {"id": 20, "username": "dr.shiv.kumar", "password": "Nol18#82", "role": "officer", "name": "Dr Shiv Kumar", "region": "Sindh"}, {"id": 21, "username": "fayyaz.hussain", "password": "Nez73!92", "role": "officer", "name": "Fayyaz Hussain", "region": "South Punjab"}, {"id": 22, "username": "habib.ur.rehman", "password": "Sel27#81", "role": "officer", "name": "Habib Ur Rehman", "region": "Sindh"}, {"id": 23, "username": "hafiz.tahir", "password": "Wix64!56", "role": "officer", "name": "Hafiz Tahir", "region": "South Punjab"}, {"id": 24, "username": "humayun.hussain", "password": "Kev73@16", "role": "officer", "name": "Humayun Hussain", "region": "Upper Punjab"}, {"id": 25, "username": "inham.ullah", "password": "Fez30!86", "role": "officer", "name": "Inham Ullah", "region": "Upper Punjab"}, {"id": 26, "username": "javed.khan", "password": "Doq86!77", "role": "officer", "name": "Javed Khan", "region": "Sindh"}, {"id": 27, "username": "khalid.hussain", "password": "Lub97@97", "role": "officer", "name": "Khalid Hussain", "region": "Sindh"}, {"id": 28, "username": "muhammad.hasnain", "password": "Wiz53@47", "role": "officer", "name": "MUHAMMAD HASNAIN", "region": "Upper Punjab"}, {"id": 29, "username": "muhammad.noman", "password": "Res10$74", "role": "officer", "name": "MUHAMMAD NOMAN", "region": "MD Direct"}, {"id": 30, "username": "mohsin.javed", "password": "Huf90$91", "role": "officer", "name": "Mohsin Javed", "region": "South Punjab"}, {"id": 31, "username": "mubashir.ali", "password": "Vuj29$30", "role": "officer", "name": "Mubashir Ali", "region": "South Punjab"}, {"id": 32, "username": "muhammad.naeem", "password": "Wub86$72", "role": "officer", "name": "Muhammad Naeem", "region": "South Punjab"}, {"id": 33, "username": "muhammad.rashid", "password": "Bap49#17", "role": "officer", "name": "Muhammad Rashid", "region": "South Punjab"}, {"id": 34, "username": "muhammad.zain", "password": "Kud20!18", "role": "officer", "name": "Muhammad Zain", "region": "Upper Punjab"}, {"id": 35, "username": "muhsin.tariq", "password": "Weg94!80", "role": "officer", "name": "Muhsin Tariq", "region": "Sindh"}, {"id": 36, "username": "muslim.abbas", "password": "Hiv87!37", "role": "officer", "name": "Muslim Abbas", "region": "Sindh"}, {"id": 37, "username": "qurban.ali.gaho", "password": "Wem61$66", "role": "officer", "name": "Qurban Ali Gaho", "region": "Sindh"}, {"id": 38, "username": "rakesh.kumar", "password": "Vof41#18", "role": "officer", "name": "Rakesh Kumar", "region": "Sindh"}, {"id": 39, "username": "rizwan.abbas", "password": "Nax80#85", "role": "officer", "name": "Rizwan Abbas", "region": "South Punjab"}, {"id": 40, "username": "sami.khan", "password": "Kad90@39", "role": "officer", "name": "SAMI KHAN", "region": "MD Direct"}, {"id": 41, "username": "sawai.mal", "password": "Dan19#45", "role": "officer", "name": "Sawai Mal", "region": "Sindh"}, {"id": 42, "username": "shabir.ahmed", "password": "Tew26!41", "role": "officer", "name": "Shabir Ahmed", "region": "Sindh"}, {"id": 43, "username": "shehbaz.khan", "password": "Toj22@94", "role": "officer", "name": "Shehbaz Khan", "region": "South Punjab"}, {"id": 44, "username": "shehzad.haider", "password": "Rir62!16", "role": "officer", "name": "Shehzad Haider", "region": "South Punjab"}, {"id": 45, "username": "shehzad.panhwar", "password": "Zac61$23", "role": "officer", "name": "Shehzad Panhwar", "region": "Sindh"}, {"id": 46, "username": "sheikh.danish.ali", "password": "Kej78!27", "role": "officer", "name": "Sheikh Danish Ali", "region": "South Punjab"}, {"id": 47, "username": "sheraz.khalid", "password": "Rel69#19", "role": "officer", "name": "Sheraz Khalid", "region": "South Punjab"}, {"id": 48, "username": "shivlal", "password": "Suf16@21", "role": "officer", "name": "Shivlal", "region": "Sindh"}, {"id": 49, "username": "talha.saeed", "password": "Ker72!37", "role": "officer", "name": "Talha Saeed", "region": "Upper Punjab"}, {"id": 50, "username": "umar.khan", "password": "Qah58@59", "role": "officer", "name": "Umar Khan", "region": "South Punjab"}, {"id": 51, "username": "wajahat.ali.shah", "password": "Lom64!29", "role": "officer", "name": "Wajahat Ali Shah", "region": "South Punjab"}, {"id": 52, "username": "waqar.hussain", "password": "Jij17@50", "role": "officer", "name": "Waqar Hussain", "region": "South Punjab"}, {"id": 53, "username": "yousaf.saeed", "password": "Cax71#17", "role": "officer", "name": "Yousaf Saeed", "region": "Upper Punjab"}, {"id": 54, "username": "zahid.nafees", "password": "Vah18@96", "role": "officer", "name": "Zahid Nafees", "region": "South Punjab"}, {"id": 55, "username": "zeeshan.umar", "password": "Kof82#84", "role": "officer", "name": "Zeeshan Umar", "region": "South Punjab"}]</script>
+
+<script>
+// ============================================================
+// GLOBALS
+// ============================================================
+var PRODUCTS  = JSON.parse(document.getElementById('d-products').textContent);
+var CUSTOMERS = JSON.parse(document.getElementById('d-customers').textContent);
+var USERS     = JSON.parse(document.getElementById('d-users').textContent);
+
+var CU = null; // current user
+var MY_CUSTS = [];
+var ACTIVE_TAB = 'dashboard';
+var CART = [];
+var CART_CUST = null;
+var PHOTO_DATA = null;
+var VISIT_GPS = null;
+var CHECKIN_GPS = null;
+var CHECKIN_TIME = null;
+
+// localStorage-based data store - reliable, persistent, works everywhere
+var DB = true; // always available
+
+function lsKey(store) { return 'br_' + store; }
+
+function initDB(cb) {
+  // Nothing to initialize for localStorage
+  if (cb) cb();
+}
+
+function dbGetAll(store, cb) {
+  try {
+    var raw = localStorage.getItem(lsKey(store));
+    var arr = raw ? JSON.parse(raw) : [];
+    cb(arr);
+  } catch(e) { cb([]); }
+}
+
+function dbPut(store, obj, cb) {
+  try {
+    var raw = localStorage.getItem(lsKey(store));
+    var arr = raw ? JSON.parse(raw) : [];
+    var found = false;
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i].id === obj.id) { arr[i] = obj; found = true; break; }
+    }
+    if (!found) arr.push(obj);
+    localStorage.setItem(lsKey(store), JSON.stringify(arr));
+  } catch(e) { console.log('dbPut error:', e); }
+  if (cb) cb();
+}
+
+function dbDelete(store, id, cb) {
+  try {
+    var raw = localStorage.getItem(lsKey(store));
+    var arr = raw ? JSON.parse(raw) : [];
+    arr = arr.filter(function(o) { return o.id !== id; });
+    localStorage.setItem(lsKey(store), JSON.stringify(arr));
+  } catch(e) {}
+  if (cb) cb();
+}
+
+function dbGetSetting(key, cb) {
+  try {
+    var raw = localStorage.getItem('br_setting_' + key);
+    cb(raw !== null ? JSON.parse(raw) : null);
+  } catch(e) { cb(null); }
+}
+
+function dbSetSetting(key, val) {
+  try { localStorage.setItem('br_setting_' + key, JSON.stringify(val)); } catch(e) {}
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function uid() { return Date.now() + '-' + Math.random().toString(36).substr(2,8); }
+
+function fmtPKR(n) {
+  var num = parseFloat(n) || 0;
+  return 'PKR ' + num.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+}
+
+function fmtDate(d) {
+  if (!d) return '-';
+  var dt = new Date(d);
+  return dt.toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'}) +
+         ' ' + dt.toLocaleTimeString('en-PK',{hour:'2-digit',minute:'2-digit',hour12:true});
+}
+
+function todayStr() { return new Date().toISOString().slice(0,10); }
+
+function fiscalQuarter() {
+  var now = new Date();
+  var m = now.getMonth(); // 0-indexed
+  var y = now.getFullYear();
+  // Fiscal year: Jul=Q1, Oct=Q2, Jan=Q3, Apr=Q4
+  var qEnd, qLabel;
+  if (m >= 6 && m <= 8)      { qEnd = new Date(y,9,1);   qLabel = 'Q1 (Jul-Sep)'; }
+  else if (m >= 9 && m <= 11){ qEnd = new Date(y+1,0,1); qLabel = 'Q2 (Oct-Dec)'; }
+  else if (m >= 0 && m <= 2) { qEnd = new Date(y,3,1);   qLabel = 'Q3 (Jan-Mar)'; }
+  else                        { qEnd = new Date(y,6,1);   qLabel = 'Q4 (Apr-Jun)'; }
+  var daysLeft = Math.max(1, Math.ceil((qEnd - now) / 86400000));
+  return {label: qLabel, daysLeft: daysLeft, endDate: qEnd};
+}
+
+function compressImage(dataUrl, maxKB, cb) {
+  var img = new Image();
+  img.onload = function() {
+    var canvas = document.createElement('canvas');
+    var maxW = 800; var maxH = 800;
+    var w = img.width; var h = img.height;
+    if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+    if (h > maxH) { w = Math.round(w * maxH / h); h = maxH; }
+    canvas.width = w; canvas.height = h;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    var q = 0.7;
+    var result = canvas.toDataURL('image/jpeg', q);
+    // Reduce quality until under maxKB
+    while (result.length > maxKB * 1024 * 1.33 && q > 0.2) {
+      q -= 0.1;
+      result = canvas.toDataURL('image/jpeg', q);
+    }
+    cb(result);
+  };
+  img.src = dataUrl;
+}
+
+function getGPS(cb) {
+  if (!navigator.geolocation) { cb(null, 'GPS not supported'); return; }
+  navigator.geolocation.getCurrentPosition(
+    function(p) { cb({lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy}); },
+    function(e) { cb(null, e.message || 'GPS unavailable'); },
+    {timeout: 12000, enableHighAccuracy: true, maximumAge: 0}
+  );
+}
+
+function gpsDistance(p1, p2) {
+  // Haversine formula - returns km
+  var R = 6371;
+  var dLat = (p2.lat - p1.lat) * Math.PI / 180;
+  var dLng = (p2.lng - p1.lng) * Math.PI / 180;
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(p1.lat * Math.PI/180) * Math.cos(p2.lat * Math.PI/180) *
+          Math.sin(dLng/2) * Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function showToast(msg, type) {
+  var el = document.createElement('div');
+  el.className = 'toast toast-' + (type || 'info');
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(function() {
+    el.style.opacity = '0';
+    setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 300);
+  }, 3000);
+}
+
+function toggleMore() {
+  var m = document.getElementById('more-menu');
+  if (m) m.classList.toggle('show');
+}
+
+document.addEventListener('click', function(e) {
+  var more = document.getElementById('more-menu');
+  var btn  = document.getElementById('tab-more');
+  if (more && !btn.contains(e.target)) more.classList.remove('show');
+});
+
+// ============================================================
+// LOGIN / LOGOUT
+// ============================================================
+function doLogin() {
+  var u = document.getElementById('lu').value.trim().toLowerCase();
+  var p = document.getElementById('lp').value.trim();
+  var found = null;
+  for (var i = 0; i < USERS.length; i++) {
+    if (USERS[i].username.toLowerCase() === u &&
+        USERS[i].password === p &&
+        USERS[i].role === 'officer') {
+      found = USERS[i]; break;
+    }
+  }
+  if (!found) {
+    document.getElementById('lerr').style.display = 'block';
+    return;
+  }
+  activateSession(found);
+}
+
+function activateSession(userObj) {
+  CU = userObj;
+  try { sessionStorage.setItem('br_session', JSON.stringify({u:userObj.username,p:userObj.password})); } catch(e) {}
+  MY_CUSTS = [];
+  for (var j = 0; j < CUSTOMERS.length; j++) {
+    if (CUSTOMERS[j].salesMan === CU.name) MY_CUSTS.push(CUSTOMERS[j]);
+  }
+  document.getElementById('lerr').style.display = 'none';
+  document.getElementById('topbar-info').textContent = CU.name + '  -  ' + CU.region;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('app').style.flexDirection = 'column';
+  showTab('dashboard', document.getElementById('tab-dashboard'));
+  try { initDB(function() { loadJourneyState(); }); } catch(e) {}
+}
+
+function checkExistingSession() {
+  try {
+    var saved = sessionStorage.getItem('br_session');
+    if (saved) {
+      var s = JSON.parse(saved);
+      for (var i = 0; i < USERS.length; i++) {
+        if (USERS[i].username === s.u && USERS[i].password === s.p && USERS[i].role === 'officer') {
+          activateSession(USERS[i]);
+          return;
+        }
+      }
+    }
+  } catch(e) {}
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function doLogout() {
+  // Clear session storage so page reload shows login
+  try { sessionStorage.removeItem('br_session_user'); } catch(e) {}
+  CU = null; CART = []; CART_CUST = null; PHOTO_DATA = null; VISIT_GPS = null;
+  JOURNEY = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('lu').value = '';
+  document.getElementById('lp').value = '';
+}
+
+document.getElementById('lp').addEventListener('keyup', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+// On page load: restore session or show login
+window.addEventListener('load', function() {
+  checkExistingSession();
+});
+
+// ============================================================
+// JOURNEY / GO LIVE
+// ============================================================
+var JOURNEY = null; // current day journey object
+
+function loadJourneyState() {
+  dbGetAll('journey', function(rows) {
+    var today = todayStr();
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].officerUsername === CU.username && rows[i].date === today) {
+        JOURNEY = rows[i]; break;
+      }
+    }
+    updateGoLiveBtn();
+    updateStatusBar();
+  });
+}
+
+function updateGoLiveBtn() {
+  var btn = document.getElementById('golive-btn');
+  var dot = document.getElementById('live-dot');
+  var ls  = document.getElementById('live-status');
+  if (!btn) return;
+  if (!JOURNEY) {
+    btn.textContent = 'Go Live';
+    btn.className = 'golive-btn';
+    if (dot) dot.className = 'status-dot';
+    if (ls)  ls.textContent = 'Offline';
+  } else if (JOURNEY.endTime) {
+    btn.textContent = 'Day Ended';
+    btn.className = 'golive-btn';
+    btn.style.background = '#718096';
+    if (dot) dot.className = 'status-dot';
+    if (ls)  ls.textContent = 'Day ended ' + JOURNEY.date;
+  } else {
+    btn.textContent = 'End My Day';
+    btn.className = 'golive-btn end';
+    if (dot) dot.className = 'status-dot live';
+    if (ls)  ls.textContent = 'Live since ' + new Date(JOURNEY.startTime).toLocaleTimeString('en-PK',{hour:'2-digit',minute:'2-digit',hour12:true});
+  }
+}
+
+function updateStatusBar() {
+  var timeEl   = document.getElementById('status-time');
+  var visitsEl = document.getElementById('status-visits');
+  var kmEl     = document.getElementById('status-km');
+  if (!timeEl) return;
+  timeEl.textContent = new Date().toLocaleTimeString('en-PK',{hour:'2-digit',minute:'2-digit',hour12:true});
+  if (JOURNEY) {
+    visitsEl.textContent = (JOURNEY.waypoints ? JOURNEY.waypoints.length : 0) + ' stops';
+    if (JOURNEY.endTime && JOURNEY.gpsKm) {
+      kmEl.textContent = JOURNEY.gpsKm.toFixed(1) + ' km';
+    }
+  }
+}
+
+function handleGoLive() {
+  if (!JOURNEY) {
+    showGoLiveModal();
+  } else if (!JOURNEY.endTime) {
+    showEndDayModal();
+  }
+}
+
+function showGoLiveModal() {
+  dbGetSetting('last_odo_' + CU.username, function(lastOdo) {
+    var lastOdoVal = lastOdo ? parseFloat(lastOdo) : 0;
+    var odoNote = lastOdoVal > 0 ? 'Last recorded: ' + lastOdoVal + ' km (cannot enter lower value)' : 'Enter current odometer reading';
+    var html = '<div class="modal show" id="golive-modal">';
+    html += '<div class="modal-box">';
+    html += '<div class="modal-hd">Start My Day <button class="modal-close" onclick="closeModal(&apos;golive-modal&apos;)">&#10005;</button></div>';
+    html += '<div class="fg"><label>Odometer Start (km)</label>';
+    html += '<input type="number" id="odo-start" min="' + lastOdoVal + '" placeholder="' + (lastOdoVal > 0 ? lastOdoVal : 'e.g. 45230') + '" value="' + (lastOdoVal > 0 ? lastOdoVal : '') + '">';
+    html += '<div class="form-note">' + odoNote + '</div></div>';
+    html += '<div class="fg"><label>Starting From</label><select id="start-from"><option>Home</option><option>Hotel / Rest House</option><option>Office</option><option>Other</option></select></div>';
+    html += '<div class="gps-capture"><p>&#128205; Your GPS location will be captured automatically</p></div>';
+    html += '<button class="btn btn-navy btn-full mt-12" onclick="submitGoLive(' + lastOdoVal + ')">&#9654; Go Live Now</button>';
+    html += '</div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+  });
+}
+
+function submitGoLive(minOdo) {
+  var odo = document.getElementById('odo-start') ? document.getElementById('odo-start').value : '';
+  var from = document.getElementById('start-from') ? document.getElementById('start-from').value : 'Home';
+  var odoVal = parseFloat(odo);
+  if (!odo || odoVal <= 0) { showToast('Enter odometer reading', 'error'); return; }
+  var minVal = parseFloat(minOdo) || 0;
+  if (minVal > 0 && odoVal < minVal) {
+    showToast('Odometer cannot be less than last recorded: ' + minVal + ' km', 'error');
+    return;
+  }
+
+  var btn = document.querySelector('#golive-modal .btn-navy');
+  if (btn) { btn.textContent = 'Capturing GPS...'; btn.disabled = true; }
+
+  getGPS(function(gps, err) {
+    var journey = {
+      id: uid(),
+      officerUsername: CU.username,
+      officerName: CU.name,
+      region: CU.region,
+      date: todayStr(),
+      startTime: new Date().toISOString(),
+      startFrom: from,
+      odoStart: parseFloat(odo),
+      startGPS: gps,
+      waypoints: [],
+      gpsKm: 0,
+      endTime: null,
+      odoEnd: null,
+      endGPS: null,
+      fuelClaim: null
+    };
+    JOURNEY = journey;
+    dbPut('journey', journey, function() {
+      closeModal('golive-modal');
+      updateGoLiveBtn();
+      updateStatusBar();
+      showToast('You are now Live! Good luck today, ' + CU.name.split(' ')[0] + '.', 'success');
+      if (ACTIVE_TAB === 'dashboard') showTab('dashboard', null);
+    });
+  });
+}
+
+function showEndDayModal() {
+  var html = '<div class="modal show" id="endday-modal">';
+  html += '<div class="modal-box">';
+  html += '<div class="modal-hd">End My Day <button class="modal-close" onclick="closeModal(&apos;endday-modal&apos;)">&#10005;</button></div>';
+  
+  var gpsKm = JOURNEY.gpsKm ? JOURNEY.gpsKm.toFixed(1) : '0.0';
+  html += '<div class="journey-card" style="margin-bottom:14px">';
+  html += '<div class="journey-status">Today&#39;s Journey Summary</div>';
+  html += '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px">';
+  html += '<span>Stops logged</span><strong>' + (JOURNEY.waypoints ? JOURNEY.waypoints.length : 0) + '</strong></div>';
+  html += '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px">';
+  html += '<span>GPS Distance</span><strong>' + gpsKm + ' km (system calculated)</strong></div>';
+  html += '</div>';
+  
+  html += '<div class="fg"><label>Odometer End (km)</label><input type="number" id="odo-end" placeholder="e.g. 45385"></div>';
+  html += '<div class="gps-capture"><p>&#128205; End location GPS will be captured automatically</p></div>';
+  html += '<button class="btn btn-red btn-full mt-12" onclick="submitEndDay()">End My Day</button>';
+  html += '</div></div>';
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function submitEndDay() {
+  var odo = document.getElementById('odo-end') ? document.getElementById('odo-end').value : '';
+  if (!odo || parseFloat(odo) <= 0) { showToast('Enter odometer reading', 'error'); return; }
+
+  var btn = document.querySelector('#endday-modal .btn-red');
+  if (btn) { btn.textContent = 'Capturing GPS...'; btn.disabled = true; }
+
+  getGPS(function(gps) {
+    var odoEnd = parseFloat(odo);
+    var odoStart = JOURNEY.odoStart || 0;
+    var odoKm = Math.max(0, odoEnd - odoStart);
+    var gpsKm = JOURNEY.gpsKm || 0;
+    var variance = Math.abs(odoKm - gpsKm);
+    var variancePct = odoKm > 0 ? (variance / odoKm * 100) : 0;
+
+    JOURNEY.endTime = new Date().toISOString();
+    JOURNEY.odoEnd  = odoEnd;
+    JOURNEY.endGPS  = gps;
+    JOURNEY.odoKm   = odoKm;
+    JOURNEY.variance = variance;
+    JOURNEY.variancePct = variancePct;
+    JOURNEY.flagged = variancePct > 15;
+    JOURNEY.fuelPending = true;
+
+    // Save last odometer reading - prevents manipulation tomorrow
+    dbSetSetting('last_odo_' + CU.username, odoEnd);
+
+    dbPut('journey', JOURNEY, function() {
+      closeModal('endday-modal');
+      updateGoLiveBtn();
+      updateStatusBar();
+      showToast('Day ended. Well done today!', 'success');
+      if (ACTIVE_TAB === 'dashboard') showTab('dashboard', null);
+    });
+  });
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function showTab(tab, el) {
+  ACTIVE_TAB = tab;
+  var btns = document.querySelectorAll('.bnav-item');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.remove('active');
+    var bar = btns[i].querySelector('.ico-bar');
+    if (bar) bar.style.display = 'none';
+  }
+  var btnId = 'tab-' + tab;
+  var activeBtn = document.getElementById(btnId) || el;
+  if (activeBtn && activeBtn.classList.contains('bnav-item')) {
+    activeBtn.classList.add('active');
+    var bar = activeBtn.querySelector('.ico-bar');
+    if (bar) bar.style.display = 'block';
+  }
+  var c = document.getElementById('main-content');
+  c.innerHTML = '<div style="text-align:center;padding:40px 0;color:#a0aec0;font-size:13px">Loading...</div>';
+  if (tab === 'dashboard') renderDashboard(c);
+  else if (tab === 'order') renderOrder(c);
+  else if (tab === 'recovery') renderRecovery(c);
+  else if (tab === 'visits') renderVisits(c);
+  else if (tab === 'expenses') renderExpenses(c);
+  else if (tab === 'stock') renderStock(c);
+  else if (tab === 'apps') renderApps(c);
+  else if (tab === 'report') renderReport(c);
+}
+
+function closeModal(id) {
+  var el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard(c) {
+  dbGetAll('orders', function(orders) {
+  dbGetAll('recoveries', function(recs) {
+  dbGetAll('visits', function(visits) {
+    var myOrders = orders.filter(function(o) { return o.officerUsername === CU.username; });
+    var myRecs   = recs.filter(function(r)   { return r.officerUsername === CU.username; });
+    var myVisits = visits.filter(function(v) { return v.officerUsername === CU.username && v.date === todayStr(); });
+
+    var totalBooked = 0;
+    for (var i = 0; i < myOrders.length; i++) totalBooked += (myOrders[i].total || 0);
+    var totalRec = 0;
+    for (var i = 0; i < myRecs.length; i++) totalRec += (myRecs[i].amount || 0);
+
+    dbGetSetting('target_' + CU.username, function(qTarget) {
+      qTarget = parseFloat(qTarget) || 0;
+      var Q = fiscalQuarter();
+      var remaining = Math.max(0, qTarget - totalBooked);
+      var dailyNeeded = Q.daysLeft > 0 ? Math.round(remaining / Q.daysLeft) : 0;
+      var pct = qTarget > 0 ? Math.min(100, Math.round(totalBooked / qTarget * 100)) : 0;
+      var recPct = qTarget > 0 ? Math.min(100, Math.round(totalRec / qTarget * 100)) : 0;
+
+      var html = '';
+
+      // Journey card if live
+      if (JOURNEY && !JOURNEY.endTime) {
+        html += '<div class="journey-card">';
+        html += '<div class="journey-status">&#9679; You are Live</div>';
+        var st = new Date(JOURNEY.startTime);
+        var elapsed = Math.round((Date.now() - st.getTime()) / 60000);
+        var hrs = Math.floor(elapsed/60); var mins = elapsed % 60;
+        html += '<div class="journey-time">' + (hrs > 0 ? hrs + 'h ' : '') + mins + 'm in field</div>';
+        html += '<div class="journey-meta">Started from ' + JOURNEY.startFrom + ' &middot; ' + (JOURNEY.waypoints.length) + ' stops logged</div>';
+        html += '</div>';
+      }
+
+      // Stats
+      html += '<div class="stat-row">';
+      html += '<div class="stat-box gold"><div class="stat-val">' + myOrders.length + '</div><div class="stat-lbl">Orders</div></div>';
+      html += '<div class="stat-box green"><div class="stat-val">' + myVisits.length + '</div><div class="stat-lbl">Visits Today</div></div>';
+      html += '<div class="stat-box red"><div class="stat-val">' + Q.daysLeft + '</div><div class="stat-lbl">Days Left</div></div>';
+      html += '</div>';
+      html += '<div class="stat-row">';
+      html += '<div class="stat-box navy"><div class="stat-val" style="font-size:13px">' + (fmtPKR(totalBooked).replace('PKR ','')) + '</div><div class="stat-lbl">Sales PKR</div></div>';
+      html += '<div class="stat-box"><div class="stat-val" style="font-size:13px">' + (fmtPKR(totalRec).replace('PKR ','')) + '</div><div class="stat-lbl">Recovery PKR</div></div>';
+      html += '<div class="stat-box blue"><div class="stat-val" style="font-size:13px">' + (fmtPKR(dailyNeeded).replace('PKR ','')) + '</div><div class="stat-lbl">Daily Need</div></div>';
+      html += '</div>';
+
+      // Target progress
+      html += '<div class="card">';
+      html += '<div class="card-hd"><span class="card-hd-title">&#127919; ' + Q.label + ' Target</span></div>';
+      if (qTarget > 0) {
+        html += '<div class="prog-wrap"><div class="prog-labels"><span>Sales ' + pct + '%</span><span>' + fmtPKR(totalBooked) + ' / ' + fmtPKR(qTarget) + '</span></div>';
+        html += '<div class="prog-bar"><div class="prog-fill" style="width:' + pct + '%"></div></div></div>';
+        html += '<div class="prog-wrap"><div class="prog-labels"><span>Recovery ' + recPct + '%</span><span>' + fmtPKR(totalRec) + '</span></div>';
+        html += '<div class="prog-bar"><div class="prog-fill gn" style="width:' + recPct + '%"></div></div></div>';
+        html += '<div class="f11 text-gray mt-8">Remaining: <strong class="text-navy">' + fmtPKR(remaining) + '</strong> &middot; Need <strong class="text-red">' + fmtPKR(dailyNeeded) + '/day</strong></div>';
+      } else {
+        html += '<div class="empty"><div class="empty-ico">&#127919;</div><div class="empty-txt">No target set yet</div></div>';
+      }
+      html += '</div>';
+
+      // Recent orders
+      html += '<div class="card"><div class="card-hd"><span class="card-hd-title">&#128203; Recent Orders</span></div>';
+      var recent = myOrders.slice().reverse().slice(0,5);
+      if (recent.length === 0) {
+        html += '<div class="empty"><div class="empty-ico">&#128203;</div><div class="empty-txt">No orders yet</div></div>';
+      } else {
+        html += '<div class="tbl-wrap"><table><thead><tr><th>Customer</th><th>Amount</th><th>Status</th></tr></thead><tbody>';
+        for (var i = 0; i < recent.length; i++) {
+          var o = recent[i];
+          var bc = o.status==='Approved'?'bg-green':o.status==='Rejected'?'bg-red':'bg-yellow';
+          html += '<tr><td>' + o.customerName + '<div class="f11 text-gray">' + fmtDate(o.createdAt) + '</div></td>';
+          html += '<td class="fw7">' + fmtPKR(o.total) + '</td>';
+          html += '<td><span class="badge ' + bc + '">' + (o.status||'Pending') + '</span></td></tr>';
+        }
+        html += '</tbody></table></div>';
+      }
+      html += '</div>';
+
+      // My customers
+      html += '<div class="card"><div class="card-hd"><span class="card-hd-title">&#128101; My Customers (' + MY_CUSTS.length + ')</span></div>';
+      if (MY_CUSTS.length === 0) {
+        html += '<div class="empty"><div class="empty-ico">&#128101;</div><div class="empty-txt">No customers assigned</div></div>';
+      } else {
+        html += '<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Customer</th><th>City</th></tr></thead><tbody>';
+        for (var i = 0; i < Math.min(MY_CUSTS.length, 10); i++) {
+          html += '<tr><td class="text-gray">' + (i+1) + '</td><td>' + MY_CUSTS[i].name + '</td><td>' + MY_CUSTS[i].city + '</td></tr>';
+        }
+        if (MY_CUSTS.length > 10) html += '<tr><td colspan="3" class="text-center text-gray f11">+ ' + (MY_CUSTS.length-10) + ' more customers</td></tr>';
+        html += '</tbody></table></div>';
+      }
+      html += '</div>';
+
+      c.innerHTML = html;
+    });
+  });
+  });
+  });
+}
+
+// ============================================================
+// ORDER
+// ============================================================
+function renderOrder(c) {
+  dbGetAll('orders', function(orders) {
+    var myOrders = orders.filter(function(o) { return o.officerUsername === CU.username; });
+    // Build recent product frequency map
+    var freq = {};
+    for (var i = 0; i < myOrders.length; i++) {
+      var items = myOrders[i].items || [];
+      for (var j = 0; j < items.length; j++) {
+        freq[items[j].productId] = (freq[items[j].productId] || 0) + 1;
+      }
+    }
+
+    var html = '';
+
+    // Cart summary at TOP
+    if (CART.length > 0) {
+      html += '<div class="cart-summary">';
+      html += '<div class="cart-summary-title">&#128722; Cart (' + CART.length + ' items)</div>';
+      var cartTotal = 0;
+      for (var i = 0; i < CART.length; i++) {
+        var ci = CART[i];
+        var amt = ci.price * ci.qty;
+        cartTotal += amt;
+        html += '<div class="cart-item-row"><span>' + ci.name + ' x' + ci.qty + '</span><span>' + fmtPKR(amt) + '</span></div>';
+      }
+      html += '<div class="cart-total"><span class="cart-total-lbl">Total</span><span class="cart-total-val">' + fmtPKR(cartTotal) + '</span></div>';
+      html += '</div>';
+    }
+
+    // Customer selector
+    html += '<div class="card"><div class="card-hd"><span class="card-hd-title">&#128203; New Order</span></div>';
+    html += '<div class="fg"><label>Customer</label><select id="ord-cust" onchange="orderCustChange()">';
+    html += '<option value="">-- Select Customer --</option>';
+    for (var i = 0; i < MY_CUSTS.length; i++) {
+      var sel = CART_CUST && CART_CUST.id === MY_CUSTS[i].id ? ' selected' : '';
+      html += '<option value="' + MY_CUSTS[i].id + '"' + sel + '>' + MY_CUSTS[i].name + '  -  ' + MY_CUSTS[i].city + '</option>';
+    }
+    html += '</select></div>';
+
+    // Search and filters
+    html += '<div class="search-wrap">';
+    html += '<input type="search" id="prod-search" placeholder="&#128269; Search product..." oninput="renderProductList()" style="flex:2">';
+    html += '<select id="prod-cat" onchange="renderProductList()">';
+    html += '<option value="">All</option><option value="INJECTION">Injections</option><option value="ORAL LIQUID">Oral Drench</option><option value="ORAL POWDER">Powders</option>';
+    html += '</select>';
+    html += '</div>';
+
+    html += '<div id="prod-list-wrap"></div>';
+    html += '</div>';
+
+    // Submit section
+    if (CART.length > 0) {
+      html += '<div class="card"><div class="card-hd"><span class="card-hd-title">&#9989; Confirm Order</span></div>';
+      html += '<div class="fg"><label>Notes (optional)</label><textarea id="ord-notes" placeholder="Special instructions..."></textarea></div>';
+      html += '<button class="btn btn-green btn-full" onclick="submitOrder()">&#9989; Submit Order</button>';
+      html += '</div>';
+    }
+
+    // Past orders
+    if (myOrders.length > 0) {
+      html += '<div class="card"><div class="card-hd"><span class="card-hd-title">&#128203; My Orders</span></div>';
+      html += '<div class="tbl-wrap"><table><thead><tr><th>Customer</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>';
+      var recentOrders = myOrders.slice().reverse().slice(0,10);
+      for (var i = 0; i < recentOrders.length; i++) {
+        var o = recentOrders[i];
+        var bc = o.status==='Approved'?'bg-green':o.status==='Rejected'?'bg-red':'bg-yellow';
+        var canDel = o.status === 'Pending';
+        html += '<tr><td>' + o.customerName + '<div class="f11 text-gray">' + fmtDate(o.createdAt) + '</div></td>';
+        html += '<td class="fw7">' + fmtPKR(o.total) + '</td>';
+        html += '<td><span class="badge ' + bc + '">' + (o.status||'Pending') + '</span></td>';
+        html += '<td>';
+        if (canDel) html += '<button class="btn btn-red btn-xs" data-oid="' + o.id + '" onclick="deleteOrderBtn(this)">&#128465;</button>';
+        html += '</td></tr>';
+      }
+      html += '</tbody></table></div></div>';
+    }
+
+    c.innerHTML = html;
+
+    // Render product list with frequency sort
+    CART_FREQ = freq;
+    renderProductList();
+  });
+}
+
+var CART_FREQ = {};
+
+function orderCustChange() {
+  var sel = document.getElementById('ord-cust');
+  var id  = parseInt(sel.value);
+  CART_CUST = null;
+  for (var i = 0; i < MY_CUSTS.length; i++) {
+    if (MY_CUSTS[i].id === id) { CART_CUST = MY_CUSTS[i]; break; }
+  }
+}
+
+function renderProductList() {
+  var wrap = document.getElementById('prod-list-wrap');
+  if (!wrap) return;
+  var search = (document.getElementById('prod-search') ? document.getElementById('prod-search').value : '').toLowerCase();
+  var cat    = document.getElementById('prod-cat') ? document.getElementById('prod-cat').value : '';
+
+  var filtered = [];
+  for (var i = 0; i < PRODUCTS.length; i++) {
+    var p = PRODUCTS[i];
+    if (search && p.name.toLowerCase().indexOf(search) === -1 && p.sku.toLowerCase().indexOf(search) === -1 && p.brand.toLowerCase().indexOf(search) === -1) continue;
+    if (cat && p.category !== cat) continue;
+    filtered.push(p);
+  }
+
+  // Sort: in-cart first, then by frequency (recent orders), then alphabetical
+  filtered.sort(function(a, b) {
+    var aCart = 0; var bCart = 0;
+    for (var i = 0; i < CART.length; i++) {
+      if (CART[i].productId === a.id) aCart = 1;
+      if (CART[i].productId === b.id) bCart = 1;
+    }
+    if (aCart !== bCart) return bCart - aCart;
+    var af = CART_FREQ[a.id] || 0;
+    var bf = CART_FREQ[b.id] || 0;
+    if (af !== bf) return bf - af;
+    return a.name.localeCompare(b.name);
+  });
+
+  var html = '';
+  for (var i = 0; i < filtered.length; i++) {
+    var p = filtered[i];
+    var cartItem = null;
+    for (var j = 0; j < CART.length; j++) {
+      if (CART[j].productId === p.id) { cartItem = CART[j]; break; }
+    }
+    var freq = CART_FREQ[p.id] || 0;
+    html += '<div class="prod-card' + (cartItem ? ' in-cart' : '') + '">';
+    html += '<div class="prod-card-top">';
+    html += '<div style="flex:1">';
+    html += '<div class="prod-name">' + p.name + (freq > 0 ? ' <span class="badge bg-blue" style="font-size:9px">&#128257; ' + freq + 'x</span>' : '') + '</div>';
+    html += '<div class="prod-meta">' + p.sku + ' &middot; ' + p.brand + ' &middot; ' + p.category + '</div>';
+    html += '</div>';
+    html += '<div class="prod-price">' + fmtPKR(p.price) + '</div>';
+    html += '</div>';
+    if (cartItem) {
+      html += '<div class="qty-ctrl">';
+      html += '<button class="qty-btn" onclick="changeQty(' + p.id + ',-1)">&#8722;</button>';
+      html += '<input type="number" min="1" max="9999" value="' + cartItem.qty + '" style="width:60px;text-align:center;border:1.5px solid #0A1628;border-radius:6px;padding:4px;font-size:14px;font-weight:700" onchange="setCartQty(' + p.id + ',this.value)" onclick="this.select()">';
+      html += '<button class="qty-btn" onclick="changeQty(' + p.id + ',1)">&#43;</button>';
+      html += '<span class="f11 text-gold" style="margin-left:6px">' + fmtPKR(cartItem.price * cartItem.qty) + '</span>';
+      html += '<button class="btn btn-red btn-xs" style="margin-left:auto" onclick="removeFromCart(' + p.id + ')">Remove</button>';
+      html += '</div>';
+    } else {
+      html += '<button class="btn btn-navy btn-sm mt-8" onclick="addToCart(' + p.id + ')">Add to Order</button>';
+    }
+    html += '</div>';
+  }
+  if (filtered.length === 0) html = '<div class="empty"><div class="empty-ico">&#128270;</div><div class="empty-txt">No products found</div></div>';
+  wrap.innerHTML = html;
+}
+
+function addToCart(pid) {
+  if (!CART_CUST) { showToast('Select a customer first', 'error'); return; }
+  for (var i = 0; i < CART.length; i++) {
+    if (CART[i].productId === pid) { CART[i].qty++; refreshOrderPage(); return; }
+  }
+  var prod = null;
+  for (var i = 0; i < PRODUCTS.length; i++) { if (PRODUCTS[i].id === pid) { prod = PRODUCTS[i]; break; } }
+  if (!prod) return;
+  CART.push({productId: pid, name: prod.name, sku: prod.sku, brand: prod.brand, price: prod.price, qty: 1});
+  refreshOrderPage();
+}
+
+function changeQty(pid, delta) {
+  for (var i = 0; i < CART.length; i++) {
+    if (CART[i].productId === pid) {
+      CART[i].qty += delta;
+      if (CART[i].qty <= 0) { CART.splice(i, 1); }
+      refreshOrderPage();
+      return;
+    }
+  }
+}
+
+function removeFromCart(pid) {
+  for (var i = 0; i < CART.length; i++) {
+    if (CART[i].productId === pid) { CART.splice(i, 1); refreshOrderPage(); return; }
+  }
+}
+
+function setCartQty(pid, val) {
+  var qty = parseInt(val) || 1;
+  if (qty < 1) qty = 1;
+  if (qty > 9999) qty = 9999;
+  for (var i = 0; i < CART.length; i++) {
+    if (CART[i].productId === pid) { CART[i].qty = qty; refreshOrderPage(); return; }
+  }
+}
+
+function refreshOrderPage() {
+  var c = document.getElementById('main-content');
+  if (c) renderOrder(c);
+}
+
+function submitOrder() {
+  if (!CART_CUST) { showToast('Select a customer', 'error'); return; }
+  if (CART.length === 0) { showToast('Add at least one product', 'error'); return; }
+  var total = 0;
+  for (var i = 0; i < CART.length; i++) total += CART[i].price * CART[i].qty;
+
+  var order = {
+    id: uid(),
+    officerUsername: CU.username,
+    officerName: CU.name,
+    region: CU.region,
+    customerId: CART_CUST.id,
+    customerName: CART_CUST.name,
+    customerCity: CART_CUST.city,
+    customerMobile: CART_CUST.mobile || '',
+    customerAddress: CART_CUST.address || '',
+    items: CART.slice(),
+    total: total,
+    notes: document.getElementById('ord-notes') ? document.getElementById('ord-notes').value : '',
+    status: 'Pending',
+    createdAt: new Date().toISOString()
+  };
+
+  dbPut('orders', order, function() {
+    CART = [];
+    CART_CUST = null;
+    showToast('Order submitted!', 'success');
+    var c = document.getElementById('main-content');
+    if (c) renderOrder(c);
+    // Show PDF option
+    setTimeout(function() { showOrderPDF(order); }, 500);
+  });
+}
+
+function deleteOrder(oid) {
+  if (!confirm('Cancel this order?')) return;
+  dbDelete('orders', oid, function() {
+    showToast('Order cancelled', 'info');
+    var c = document.getElementById('main-content');
+    if (c) renderOrder(c);
+  });
+}
+
+function deleteOrderBtn(btn) {
+  var oid = btn.getAttribute('data-oid');
+  if (oid) deleteOrder(oid);
+}
+
+function showOrderPDF(order) {
+  var items = order.items || [];
+  var tbl = '';
+  tbl += '<table style="width:100%;border-collapse:collapse;margin:16px 0">';
+  tbl += '<tr style="background:#0A1628;color:#fff"><th style="padding:8px">Product</th><th style="padding:8px">SKU</th><th style="padding:8px">Qty</th><th style="padding:8px">Price</th><th style="padding:8px">Amount</th></tr>';
+  for (var i = 0; i < items.length; i++) {
+    var it = items[i];
+    tbl += '<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:7px">' + it.name + '</td><td style="padding:7px;font-size:11px">' + it.sku + '</td><td style="padding:7px;text-align:center">' + it.qty + '</td><td style="padding:7px">' + fmtPKR(it.price) + '</td><td style="padding:7px;font-weight:700">' + fmtPKR(it.price * it.qty) + '</td></tr>';
+  }
+  tbl += '<tr style="background:#f0f4f8"><td colspan="4" style="padding:8px;font-weight:700;text-align:right">GRAND TOTAL</td><td style="padding:8px;font-weight:900;font-size:16px;color:#C9A84C">' + fmtPKR(order.total) + '</td></tr>';
+  tbl += '</table>';
+
+  var info = '<table style="border-collapse:collapse;margin-bottom:16px;font-size:13px"><tr><td style="padding:4px 12px 4px 0;color:#718096">Order ID</td><td style="padding:4px 0;font-weight:700">' + order.id + '</td></tr>';
+  info += '<tr><td style="padding:4px 12px 4px 0;color:#718096">Date</td><td>' + fmtDate(order.createdAt) + '</td></tr>';
+  info += '<tr><td style="padding:4px 12px 4px 0;color:#718096">Customer</td><td style="font-weight:700">' + order.customerName + '</td></tr>';
+  info += '<tr><td style="padding:4px 12px 4px 0;color:#718096">City</td><td>' + order.customerCity + '</td></tr>';
+  info += '<tr><td style="padding:4px 12px 4px 0;color:#718096">Officer</td><td>' + order.officerName + '</td></tr>';
+  info += '<tr><td style="padding:4px 12px 4px 0;color:#718096">Region</td><td>' + order.region + '</td></tr>';
+  if (order.notes) info += '<tr><td style="padding:4px 12px 4px 0;color:#718096">Notes</td><td>' + order.notes + '</td></tr>';
+  info += '</table>';
+
+  pdfExport('Sale Order #' + order.id.slice(-8).toUpperCase(), info + tbl);
+}
+
+// ============================================================
+// RECOVERY
+// ============================================================
+function renderRecovery(c) {
+  dbGetAll('recoveries', function(recs) {
+    var myRecs = recs.filter(function(r) { return r.officerUsername === CU.username; });
+    var html = '<div class="card"><div class="card-hd"><span class="card-hd-title">&#8635; Post Recovery</span></div>';
+    html += '<div class="fg"><label>Customer</label><select id="rec-cust">';
+    html += '<option value="">-- Select --</option>';
+    for (var i = 0; i < MY_CUSTS.length; i++) {
+      html += '<option value="' + MY_CUSTS[i].id + '">' + MY_CUSTS[i].name + '  -  ' + MY_CUSTS[i].city + '</option>';
+    }
+    html += '</select></div>';
+    html += '<div class="fg-row">';
+    html += '<div class="fg"><label>Amount (PKR)</label><input type="number" id="rec-amt" placeholder="0"></div>';
+    html += '<div class="fg"><label>Method</label><select id="rec-method"><option>Cash</option><option>Cheque</option><option>Bank Transfer</option><option>Mobile Payment</option></select></div>';
+    html += '</div>';
+    html += '<div class="fg"><label>Reference No.</label><input type="text" id="rec-ref" placeholder="Cheque / TRN / Receipt No."></div>';
+    html += '<div class="fg"><label>Notes</label><input type="text" id="rec-notes" placeholder="Optional"></div>';
+    html += '<button class="btn btn-green btn-full" onclick="submitRecovery()">&#9989; Post Recovery</button>';
+    html += '</div>';
+
+    html += '<div class="card"><div class="card-hd"><span class="card-hd-title">&#128203; Recovery History</span></div>';
+    if (myRecs.length === 0) {
+      html += '<div class="empty"><div class="empty-ico">&#128203;</div><div class="empty-txt">No recoveries posted yet</div></div>';
+    } else {
+      var sorted = myRecs.slice().reverse().slice(0,15);
+      html += '<div class="tbl-wrap"><table><thead><tr><th>Customer</th><th>Amount</th><th>Method</th><th>Status</th></tr></thead><tbody>';
+      for (var i = 0; i < sorted.length; i++) {
+        var r = sorted[i];
+        html += '<tr><td>' + r.customerName + '<div class="f11 text-gray">' + fmtDate(r.createdAt) + '</div></td>';
+        html += '<td class="fw7">' + fmtPKR(r.amount) + '</td>';
+        html += '<td>' + r.method + '</td>';
+        html += '<td><span class="badge ' + (r.verified ? 'bg-green' : 'bg-yellow') + '">' + (r.verified ? 'Verified' : 'Pending') + '</span></td></tr>';
+      }
+      html += '</tbody></table></div>';
+    }
+    html += '</div>';
+    c.innerHTML = html;
+  });
+}
+
+function submitRecovery() {
+  var custId = parseInt(document.getElementById('rec-cust').value);
+  var amt    = parseFloat(document.getElementById('rec-amt').value);
+  if (!custId) { showToast('Select a customer', 'error'); return; }
+  if (!amt || amt <= 0) { showToast('Enter valid amount', 'error'); return; }
+  var cust = null;
+  for (var i = 0; i < MY_CUSTS.length; i++) { if (MY_CUSTS[i].id === custId) { cust = MY_CUSTS[i]; break; } }
+  var rec = {
+    id: uid(),
+    officerUsername: CU.username,
+    officerName: CU.name,
+    region: CU.region,
+    customerId: custId,
+    customerName: cust ? cust.name : '',
+    amount: amt,
+    method: document.getElementById('rec-method').value,
+    ref: document.getElementById('rec-ref').value,
+    notes: document.getElementById('rec-notes').value,
+    verified: false,
+    createdAt: new Date().toISOString()
+  };
+  dbPut('recoveries', rec, function() {
+    showToast('Recovery posted!', 'success');
+    renderRecovery(document.getElementById('main-content'));
+  });
+}
+
+// ============================================================
+// VISITS
+// ============================================================
+function renderVisits(c) {
+  dbGetAll('visits', function(visits) {
+    var myVisits = visits.filter(function(v) { return v.officerUsername === CU.username; });
+    var html = '<div class="card"><div class="card-hd"><span class="card-hd-title">&#128205; Log Customer Visit</span></div>';
+
+    if (!JOURNEY || JOURNEY.endTime) {
+      html += '<div style="background:#fff5f5;border:1.5px solid #feb2b2;border-radius:8px;padding:12px;font-size:13px;color:#c53030;font-weight:600;margin-bottom:12px">&#9888; Go Live first to log a visit</div>';
+    }
+
+    html += '<div class="fg"><label>Customer</label><select id="vis-cust">';
+    html += '<option value="">-- Select Customer --</option>';
+    for (var i = 0; i < MY_CUSTS.length; i++) {
+      html += '<option value="' + MY_CUSTS[i].id + '">' + MY_CUSTS[i].name + '  -  ' + MY_CUSTS[i].city + '</option>';
+    }
+    html += '</select></div>';
+
+    html += '<div class="fg-row">';
+    html += '<div class="fg"><label>Purpose</label><select id="vis-purpose"><option>Regular Visit</option><option>Order Follow-up</option><option>Payment Collection</option><option>Product Promotion</option><option>Complaint Resolution</option><option>New Customer</option></select></div>';
+    html += '<div class="fg"><label>Outcome</label><select id="vis-outcome"><option>Order Booked</option><option>Recovery Collected</option><option>Visit Only</option><option>Customer Absent</option><option>Follow-up Required</option></select></div>';
+    html += '</div>';
+
+    html += '<div class="fg"><label>Remarks</label><textarea id="vis-remarks" placeholder="Visit summary, discussion points..."></textarea></div>';
+
+    // GPS capture
+    html += '<div id="vis-gps-wrap">';
+    html += '<button class="btn btn-outline btn-full mb-8" onclick="captureVisitGPS()">&#128205; Capture My Location (Required)</button>';
+    html += '<div id="vis-gps-status"></div>';
+    html += '</div>';
+
+    // Photo capture
+    html += '<div class="fg">';
+    html += '<label>Photo with Customer / Products (Required)</label>';
+    html += '<div class="photo-wrap" id="photo-wrap" onclick="triggerPhoto()">';
+    html += '<img class="photo-preview" id="photo-preview" src="" alt="">';
+    html += '<div id="photo-placeholder"><div style="font-size:36px">&#128247;</div><div class="photo-label">Tap to open camera</div><div class="photo-label" style="font-size:10px">Officer with shopkeeper or products inside shop</div></div>';
+    html += '<input type="file" accept="image/*" capture="environment" id="photo-input" class="photo-input" onchange="handlePhoto(this)">';
+    html += '</div>';
+    html += '</div>';
+
+    html += '<div class="fg" id="photo-decline-wrap" style="display:none">';
+    html += '<label>Reason (optional brief note)</label>';
+    html += '<textarea id="photo-decline-reason" placeholder="e.g. Customer refused, shop closed..."></textarea>';
+    html += '</div>';
+
+    html += '<div style="display:flex;gap:8px;margin-top:4px">';
+    html += '<button class="btn btn-green btn-full" onclick="submitVisit(false)">&#9989; Submit Visit</button>';
+    html += '<button class="btn btn-ghost btn-sm" onclick="togglePhotoDecline()" title="Customer declined photo">No Photo</button>';
+    html += '</div>';
+    html += '</div>';
+
+    // History
+    html += '<div class="card"><div class="card-hd"><span class="card-hd-title">&#128203; Visit History</span></div>';
+    if (myVisits.length === 0) {
+      html += '<div class="empty"><div class="empty-ico">&#128205;</div><div class="empty-txt">No visits logged yet</div></div>';
+    } else {
+      var sorted = myVisits.slice().reverse().slice(0,15);
+      html += '<div class="tbl-wrap"><table><thead><tr><th>Customer</th><th>Purpose</th><th>GPS</th><th>Photo</th><th>Date</th></tr></thead><tbody>';
+      for (var i = 0; i < sorted.length; i++) {
+        var v = sorted[i];
+        var gpsOk = v.checkinGPS ? '<span class="badge bg-green">&#10003;</span>' : '<span class="badge bg-red">None</span>';
+        var photoOk = v.photo ? '<span class="badge bg-green">&#10003;</span>' : (v.photoDeclined ? '<span class="badge bg-orange">Declined</span>' : '<span class="badge bg-red">None</span>');
+        html += '<tr><td>' + v.customerName + '</td><td>' + v.purpose + '</td><td>' + gpsOk + '</td><td>' + photoOk + '</td><td class="f11">' + fmtDate(v.createdAt) + '</td></tr>';
+      }
+      html += '</tbody></table></div>';
+    }
+    html += '</div>';
+
+    c.innerHTML = html;
+    VISIT_GPS = null;
+    PHOTO_DATA = null;
+  });
+}
+
+function captureVisitGPS() {
+  var btn = document.querySelector('#vis-gps-wrap button');
+  if (btn) { btn.textContent = 'Getting GPS...'; btn.disabled = true; }
+  getGPS(function(gps, err) {
+    var el = document.getElementById('vis-gps-status');
+    if (gps) {
+      VISIT_GPS = gps;
+      if (el) el.innerHTML = '<div class="gps-coords">&#128205; ' + gps.lat.toFixed(5) + ', ' + gps.lng.toFixed(5) + ' (acc: ' + Math.round(gps.acc) + 'm)</div>';
+      if (btn) { btn.textContent = '&#10003; Location Captured'; btn.style.background = '#c6f6d5'; btn.style.color = '#276749'; }
+    } else {
+      VISIT_GPS = null;
+      if (el) el.innerHTML = '<div class="gps-fail">GPS unavailable. Visit will be flagged for manual review.</div>';
+      if (btn) { btn.textContent = 'GPS Unavailable'; btn.disabled = false; }
+    }
+  });
+}
+
+function triggerPhoto() {
+  document.getElementById('photo-input').click();
+}
+
+function handlePhoto(input) {
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    compressImage(e.target.result, 400, function(compressed) {
+      PHOTO_DATA = compressed;
+      var preview = document.getElementById('photo-preview');
+      var placeholder = document.getElementById('photo-placeholder');
+      var wrap = document.getElementById('photo-wrap');
+      if (preview) { preview.src = compressed; preview.style.display = 'block'; }
+      if (placeholder) placeholder.style.display = 'none';
+      if (wrap) wrap.classList.add('has-photo');
+    });
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function togglePhotoDecline() {
+  var el = document.getElementById('photo-decline-wrap');
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function submitVisit(forceNoPhoto) {
+  var custId = parseInt(document.getElementById('vis-cust') ? document.getElementById('vis-cust').value : '');
+  if (!custId) { showToast('Select a customer', 'error'); return; }
+
+  var photoDeclined = document.getElementById('photo-decline-wrap') && document.getElementById('photo-decline-wrap').style.display !== 'none';
+  var declineReason = document.getElementById('photo-decline-reason') ? document.getElementById('photo-decline-reason').value.trim() : '';
+
+  if (!PHOTO_DATA && !photoDeclined) {
+    showToast('Photo is required. Tap the camera or use No Photo.', 'error');
+    return;
+  }
+  if (photoDeclined && declineReason.length < 3) {
+    showToast('Enter a brief reason (min 3 chars)', 'error');
+    return;
+  }
+  if (!VISIT_GPS) {
+    if (!confirm('No GPS captured. Visit will be flagged for review. Continue?')) return;
+  }
+
+  var cust = null;
+  for (var i = 0; i < MY_CUSTS.length; i++) { if (MY_CUSTS[i].id === custId) { cust = MY_CUSTS[i]; break; } }
+
+  var visit = {
+    id: uid(),
+    officerUsername: CU.username,
+    officerName: CU.name,
+    region: CU.region,
+    customerId: custId,
+    customerName: cust ? cust.name : '',
+    customerCity: cust ? cust.city : '',
+    purpose: document.getElementById('vis-purpose').value,
+    outcome: document.getElementById('vis-outcome').value,
+    remarks: document.getElementById('vis-remarks').value,
+    checkinGPS: VISIT_GPS,
+    photo: photoDeclined ? null : PHOTO_DATA,
+    photoDeclined: photoDeclined,
+    photoDeclineReason: declineReason,
+    flagged: !VISIT_GPS || photoDeclined,
+    date: todayStr(),
+    createdAt: new Date().toISOString()
+  };
+
+  // Add waypoint to journey
+  if (JOURNEY && !JOURNEY.endTime && VISIT_GPS) {
+    var wps = JOURNEY.waypoints || [];
+    if (wps.length > 0) {
+      var prev = wps[wps.length - 1];
+      var dist = gpsDistance(prev, VISIT_GPS);
+      JOURNEY.gpsKm = (JOURNEY.gpsKm || 0) + dist * 1.10;
+    } else if (JOURNEY.startGPS) {
+      var dist = gpsDistance(JOURNEY.startGPS, VISIT_GPS);
+      JOURNEY.gpsKm = (JOURNEY.gpsKm || 0) + dist * 1.10;
+    }
+    wps.push({lat: VISIT_GPS.lat, lng: VISIT_GPS.lng, time: new Date().toISOString(), customer: cust ? cust.name : ''});
+    JOURNEY.waypoints = wps;
+    dbPut('journey', JOURNEY);
+    updateStatusBar();
+  }
+
+  dbPut('visits', visit, function() {
+    VISIT_GPS = null;
+    PHOTO_DATA = null;
+    showToast('Visit logged!', 'success');
+    renderVisits(document.getElementById('main-content'));
+  });
+}
+
+// ============================================================
+// EXPENSES
+// ============================================================
+function renderExpenses(c) {
+  dbGetAll('expenses', function(exps) {
+    dbGetAll('journey', function(journeys) {
+      dbGetSetting('petrol_rate', function(rate) {
+        var myExps = exps.filter(function(e) { return e.officerUsername === CU.username; });
+        var petrolRate = parseFloat(rate) || 0;
+
+        var html = '<div class="card"><div class="card-hd"><span class="card-hd-title">&#128176; Submit Expense</span></div>';
+
+        if (petrolRate > 0) {
+          html += '<div style="background:#f0fff4;border:1px solid #9ae6b4;border-radius:8px;padding:10px 12px;font-size:12px;color:#276749;font-weight:700;margin-bottom:12px">Fuel Rate Today: PKR ' + petrolRate + '/Litre &middot; Per KM rate: PKR ' + (petrolRate * 0.02).toFixed(2) + '</div>';
+        }
+
+        html += '<div class="fg-row">';
+        html += '<div class="fg"><label>Receipt No. *</label><input type="text" id="exp-rcpt" placeholder="Mandatory"></div>';
+        html += '<div class="fg"><label>Date</label><input type="date" id="exp-date" value="' + todayStr() + '"></div>';
+        html += '</div>';
+
+        html += '<div class="fg"><label>Expense Type</label><select id="exp-type" onchange="onExpTypeChange()">';
+        html += '<option>Travel/Fuel</option><option>Meals</option><option>Accommodation</option>';
+        html += '<option>Communication</option><option>Promotional Material</option>';
+        html += '<option>Repair</option><option>Tuning / Service of Vehicle</option>';
+        html += '<option>Toll Tax</option><option>Other</option>';
+        html += '</select></div>';
+
+        // Fuel auto-calc section
+        html += '<div id="fuel-section" style="display:none">';
+        html += '<div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:10px">';
+        html += '<div class="f12 fw7 text-navy mb-8">Fuel Calculation (Auto)</div>';
+        
+        // Check today's journey
+        var todayJourney = null;
+        for (var i = 0; i < journeys.length; i++) {
+          if (journeys[i].officerUsername === CU.username && journeys[i].date === todayStr() && journeys[i].endTime) {
+            todayJourney = journeys[i]; break;
+          }
+        }
+        
+        if (petrolRate > 0) {
+          html += '<div class="fg"><label>KM Travelled Today</label><input type="number" id="exp-km" placeholder="Enter KM travelled" oninput="calcFuel()"></div>';
+          html += '<div class="fg-row">';
+          html += '<div class="fg"><label>Fuel Rate (PKR/L)</label><input type="text" value="' + petrolRate + '" readonly style="background:#f0f4f8"></div>';
+          html += '<div class="fg"><label>Fuel Claim (PKR)</label><input type="number" id="exp-amt-fuel" placeholder="Auto-calculated or enter manually"></div>';
+          html += '</div>';
+          html += '<div class="f11 text-gray" id="fuel-formula">Enter KM to calculate claim</div>';
+        } else {
+          html += '<div class="fg"><label>KM Travelled Today</label><input type="number" id="exp-km" placeholder="Enter KM travelled" oninput="calcFuel()"></div>';
+          html += '<div class="fg"><label>Fuel Claim (PKR)</label><input type="number" id="exp-amt-fuel" placeholder="Enter claim amount"></div>';
+          html += '<div class="f11 text-gray">No petrol rate set by admin. Enter amount manually.</div>';
+        }
+        html += '</div>';
+        html += '</div>';
+
+        html += '<div id="manual-amt-section">';
+        html += '<div class="fg"><label>Amount (PKR)</label><input type="number" id="exp-amt" placeholder="0"></div>';
+        html += '</div>';
+
+        html += '<div class="fg"><label>Description</label><textarea id="exp-desc" placeholder="Details..."></textarea></div>';
+        html += '<button class="btn btn-navy btn-full" onclick="submitExpense()">Submit Expense</button>';
+        html += '</div>';
+
+        // History
+        html += '<div class="card"><div class="card-hd"><span class="card-hd-title">&#128203; Expense History</span></div>';
+        if (myExps.length === 0) {
+          html += '<div class="empty"><div class="empty-ico">&#128176;</div><div class="empty-txt">No expenses submitted yet</div></div>';
+        } else {
+          var total = 0;
+          for (var i = 0; i < myExps.length; i++) total += (myExps[i].amount || 0);
+          html += '<div class="f12 fw7 text-navy mb-8">Total submitted: ' + fmtPKR(total) + '</div>';
+          var sorted = myExps.slice().reverse().slice(0,15);
+          html += '<div class="tbl-wrap"><table><thead><tr><th>Receipt</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead><tbody>';
+          for (var i = 0; i < sorted.length; i++) {
+            var e = sorted[i];
+            var st = e.adminApproved ? 'Approved' : e.rejected ? 'Rejected' : e.managerApproved ? 'Mgr OK' : 'Pending';
+            var sc = e.adminApproved ? 'bg-green' : e.rejected ? 'bg-red' : e.managerApproved ? 'bg-blue' : 'bg-yellow';
+            html += '<tr><td>' + e.receiptNo + '<div class="f11 text-gray">' + e.date + '</div></td>';
+            html += '<td class="f11">' + e.type + '</td>';
+            html += '<td class="fw7">' + fmtPKR(e.amount) + '</td>';
+            html += '<td><span class="badge ' + sc + '">' + st + '</span></td></tr>';
+          }
+          html += '</tbody></table></div>';
+        }
+        html += '</div>';
+
+        c.innerHTML = html;
+      });
+    });
+  });
+}
+
+function onExpTypeChange() {
+  var type = document.getElementById('exp-type') ? document.getElementById('exp-type').value : '';
+  var fuelSec = document.getElementById('fuel-section');
+  var manualSec = document.getElementById('manual-amt-section');
+  if (type === 'Travel/Fuel') {
+    if (fuelSec) fuelSec.style.display = 'block';
+    if (manualSec) manualSec.style.display = 'none';
+  } else {
+    if (fuelSec) fuelSec.style.display = 'none';
+    if (manualSec) manualSec.style.display = 'block';
+  }
+}
+
+function calcFuel() {
+  var kmEl = document.getElementById('exp-km');
+  var amtEl = document.getElementById('exp-amt-fuel');
+  var frmEl = document.getElementById('fuel-formula');
+  if (!kmEl || !amtEl) return;
+  var km = parseFloat(kmEl.value) || 0;
+  dbGetSetting('petrol_rate', function(rate) {
+    var petrolRate = parseFloat(rate) || 0;
+    if (petrolRate > 0 && km > 0) {
+      var claim = (km * 0.02 * petrolRate).toFixed(0);
+      amtEl.value = claim;
+      if (frmEl) frmEl.textContent = km + ' km x 0.02 x PKR ' + petrolRate + ' = PKR ' + claim;
+    } else if (km > 0) {
+      if (frmEl) frmEl.textContent = 'No petrol rate set. Enter amount manually.';
+    }
+  });
+}
+
+function submitExpense() {
+  var rcpt = document.getElementById('exp-rcpt') ? document.getElementById('exp-rcpt').value.trim() : '';
+  var type = document.getElementById('exp-type') ? document.getElementById('exp-type').value : '';
+  var isFuel = type === 'Travel/Fuel';
+  var amtEl = isFuel ? document.getElementById('exp-amt-fuel') : document.getElementById('exp-amt');
+  var amt = amtEl ? parseFloat(amtEl.value) : 0;
+
+  if (!rcpt) { showToast('Receipt number is mandatory', 'error'); return; }
+  if (!amt || amt <= 0) { showToast('Invalid amount', 'error'); return; }
+
+  var kmEl = document.getElementById('exp-km');
+  var officerKm = kmEl ? (parseFloat(kmEl.value) || 0) : 0;
+  var exp = {
+    id: uid(),
+    officerUsername: CU.username,
+    officerName: CU.name,
+    region: CU.region,
+    receiptNo: rcpt,
+    type: type,
+    amount: amt,
+    officerKm: officerKm,
+    date: document.getElementById('exp-date').value,
+    description: document.getElementById('exp-desc') ? document.getElementById('exp-desc').value : '',
+    isFuelAuto: isFuel,
+    managerApproved: false,
+    adminApproved: false,
+    rejected: false,
+    createdAt: new Date().toISOString()
+  };
+
+  dbPut('expenses', exp, function() {
+    showToast('Expense submitted!', 'success');
+    renderExpenses(document.getElementById('main-content'));
+  });
+}
+
+// ============================================================
+// STOCK
+// ============================================================
+function renderStock(c) {
+  dbGetAll('settings', function(settings) {
+    var stockKey = 'stock_' + CU.username;
+    var stockData = null;
+    for (var i = 0; i < settings.length; i++) {
+      if (settings[i].id === stockKey) { stockData = settings[i].val; break; }
+    }
+
+    var html = '<div class="card"><div class="card-hd"><span class="card-hd-title">&#128230; My Sample Stock</span></div>';
+    if (!stockData || stockData.length === 0) {
+      html += '<div class="empty"><div class="empty-ico">&#128230;</div><div class="empty-txt">No stock issued to you yet</div></div>';
+    } else {
+      html += '<div class="tbl-wrap"><table><thead><tr><th>Product</th><th>Issued</th><th>Sold</th><th>Returned</th><th>Balance</th></tr></thead><tbody>';
+      for (var i = 0; i < stockData.length; i++) {
+        var s = stockData[i];
+        var bal = (s.issued||0) - (s.sold||0) - (s.returned||0);
+        html += '<tr><td>' + s.productName + '</td><td>' + (s.issued||0) + '</td><td>' + (s.sold||0) + '</td><td>' + (s.returned||0) + '</td>';
+        html += '<td><strong class="' + (bal < 0 ? 'text-red' : 'text-navy') + '">' + bal + '</strong></td></tr>';
+      }
+      html += '</tbody></table></div>';
+    }
+    html += '</div>';
+    c.innerHTML = html;
+  });
+}
+
+// ============================================================
+// APPLICATIONS
+// ============================================================
+function renderApps(c) {
+  dbGetAll('apps', function(apps) {
+    var myApps = apps.filter(function(a) { return a.officerUsername === CU.username; });
+    var html = '<div class="card"><div class="card-hd"><span class="card-hd-title">&#128221; Write Application</span></div>';
+    html += '<div class="fg-row">';
+    html += '<div class="fg"><label>Type</label><select id="app-type"><option>Leave Request</option><option>Stock Request</option><option>Complaint</option><option>Transfer Request</option><option>Advance Request</option><option>Other</option></select></div>';
+    html += '<div class="fg"><label>Priority</label><select id="app-priority"><option>Normal</option><option>Urgent</option></select></div>';
+    html += '</div>';
+    html += '<div class="fg"><label>Subject</label><input type="text" id="app-subject" placeholder="Brief subject line"></div>';
+    html += '<div class="fg"><label>Application Body</label><textarea id="app-body" placeholder="Write your application..."></textarea></div>';
+    html += '<button class="btn btn-navy btn-full" onclick="submitApp()">Submit Application</button>';
+    html += '</div>';
+
+    html += '<div class="card"><div class="card-hd"><span class="card-hd-title">&#128203; My Applications</span></div>';
+    if (myApps.length === 0) {
+      html += '<div class="empty"><div class="empty-ico">&#128221;</div><div class="empty-txt">No applications yet</div></div>';
+    } else {
+      var sorted = myApps.slice().reverse();
+      html += '<div class="tbl-wrap"><table><thead><tr><th>Type</th><th>Subject</th><th>Priority</th><th>Status</th></tr></thead><tbody>';
+      for (var i = 0; i < sorted.length; i++) {
+        var a = sorted[i];
+        var st = a.adminApproved ? 'Approved' : a.rejected ? 'Rejected' : a.managerApproved ? 'Fwd Admin' : 'Pending';
+        var sc = a.adminApproved ? 'bg-green' : a.rejected ? 'bg-red' : a.managerApproved ? 'bg-blue' : 'bg-yellow';
+        html += '<tr><td>' + a.type + '</td><td class="f12">' + a.subject + '</td>';
+        html += '<td><span class="badge ' + (a.priority==='Urgent'?'bg-red':'bg-gray') + '">' + a.priority + '</span></td>';
+        html += '<td><span class="badge ' + sc + '">' + st + '</span></td></tr>';
+      }
+      html += '</tbody></table></div>';
+    }
+    html += '</div>';
+    c.innerHTML = html;
+  });
+}
+
+function submitApp() {
+  var subj = document.getElementById('app-subject') ? document.getElementById('app-subject').value.trim() : '';
+  var body = document.getElementById('app-body') ? document.getElementById('app-body').value.trim() : '';
+  if (!subj) { showToast('Enter a subject', 'error'); return; }
+  if (!body) { showToast('Write the application body', 'error'); return; }
+  var app = {
+    id: uid(),
+    officerUsername: CU.username,
+    officerName: CU.name,
+    region: CU.region,
+    type: document.getElementById('app-type').value,
+    priority: document.getElementById('app-priority').value,
+    subject: subj,
+    body: body,
+    managerApproved: false,
+    adminApproved: false,
+    rejected: false,
+    createdAt: new Date().toISOString()
+  };
+  dbPut('apps', app, function() {
+    showToast('Application submitted!', 'success');
+    renderApps(document.getElementById('main-content'));
+  });
+}
+
+// ============================================================
+// DAILY REPORT
+// ============================================================
+function renderReport(c) {
+  dbGetAll('orders', function(orders) {
+  dbGetAll('recoveries', function(recs) {
+  dbGetAll('visits', function(visits) {
+  dbGetAll('expenses', function(exps) {
+    var today = todayStr();
+    var tOrders  = orders.filter(function(o)  { return o.officerUsername === CU.username && o.createdAt && o.createdAt.indexOf(today) === 0; });
+    var tRecs    = recs.filter(function(r)    { return r.officerUsername === CU.username && r.createdAt && r.createdAt.indexOf(today) === 0; });
+    var tVisits  = visits.filter(function(v)  { return v.officerUsername === CU.username && v.date === today; });
+    var tExps    = exps.filter(function(e)    { return e.officerUsername === CU.username && e.date === today; });
+
+    var totSales = 0; for (var i = 0; i < tOrders.length; i++) totSales += (tOrders[i].total||0);
+    var totRec   = 0; for (var i = 0; i < tRecs.length; i++)   totRec   += (tRecs[i].amount||0);
+    var totExp   = 0; for (var i = 0; i < tExps.length; i++)   totExp   += (tExps[i].amount||0);
+
+    var html = '<div class="card">';
+    html += '<div class="card-hd"><span class="card-hd-title">&#128196; Daily Report &mdash; ' + new Date().toLocaleDateString('en-PK',{weekday:'short',day:'numeric',month:'short',year:'numeric'}) + '</span></div>';
+
+    html += '<div class="stat-row">';
+    html += '<div class="stat-box gold"><div class="stat-val">' + tOrders.length + '</div><div class="stat-lbl">Orders</div></div>';
+    html += '<div class="stat-box green"><div class="stat-val">' + tVisits.length + '</div><div class="stat-lbl">Visits</div></div>';
+    html += '<div class="stat-box navy"><div class="stat-val">' + tRecs.length + '</div><div class="stat-lbl">Recoveries</div></div>';
+    html += '</div>';
+
+    html += '<div class="stat-row">';
+    html += '<div class="stat-box"><div class="stat-val" style="font-size:14px">' + fmtPKR(totSales).replace('PKR ','') + '</div><div class="stat-lbl">Sales PKR</div></div>';
+    html += '<div class="stat-box"><div class="stat-val" style="font-size:14px">' + fmtPKR(totRec).replace('PKR ','') + '</div><div class="stat-lbl">Recovery PKR</div></div>';
+    html += '<div class="stat-box"><div class="stat-val" style="font-size:14px">' + fmtPKR(totExp).replace('PKR ','') + '</div><div class="stat-lbl">Expenses PKR</div></div>';
+    html += '</div>';
+
+    if (JOURNEY) {
+      html += '<div style="background:#f0f4f8;border-radius:8px;padding:10px 12px;font-size:12px;margin-top:4px">';
+      html += '<strong>Journey:</strong> ';
+      html += 'Start ' + (JOURNEY.startTime ? new Date(JOURNEY.startTime).toLocaleTimeString('en-PK',{hour:'2-digit',minute:'2-digit',hour12:true}) : '-');
+      if (JOURNEY.endTime) html += ' &rarr; End ' + new Date(JOURNEY.endTime).toLocaleTimeString('en-PK',{hour:'2-digit',minute:'2-digit',hour12:true});
+      html += ' &middot; ' + (JOURNEY.gpsKm || 0).toFixed(1) + ' km GPS';
+      if (JOURNEY.odoKm) html += ' &middot; ' + JOURNEY.odoKm + ' km Odo';
+      html += '</div>';
+    }
+
+    html += '<button class="btn btn-gold btn-full mt-12" onclick="exportReportPDF()">&#128196; Export PDF + WhatsApp</button>';
+    html += '</div>';
+
+    c.innerHTML = html;
+  });
+  });
+  });
+  });
+}
+
+function exportReportPDF() {
+  dbGetAll('orders', function(orders) {
+  dbGetAll('recoveries', function(recs) {
+  dbGetAll('visits', function(visits) {
+    var today = todayStr();
+    var tOrders = orders.filter(function(o) { return o.officerUsername === CU.username && o.createdAt && o.createdAt.indexOf(today) === 0; });
+    var tRecs   = recs.filter(function(r)   { return r.officerUsername === CU.username && r.createdAt && r.createdAt.indexOf(today) === 0; });
+    var tVisits = visits.filter(function(v) { return v.officerUsername === CU.username && v.date === today; });
+
+    var totSales = 0; for (var i = 0; i < tOrders.length; i++) totSales += (tOrders[i].total||0);
+    var totRec   = 0; for (var i = 0; i < tRecs.length; i++)   totRec   += (tRecs[i].amount||0);
+
+    var tbl = '';
+    tbl += '<table style="width:100%;border-collapse:collapse;margin-bottom:16px">';
+    tbl += '<tr style="background:#0A1628;color:#fff"><td style="padding:8px;font-weight:700">Summary</td><td style="padding:8px"></td></tr>';
+    tbl += '<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0;color:#718096">Officer</td><td style="padding:6px;border-bottom:1px solid #e2e8f0;font-weight:700">' + CU.name + '</td></tr>';
+    tbl += '<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0;color:#718096">Region</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">' + CU.region + '</td></tr>';
+    tbl += '<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0;color:#718096">Date</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">' + today + '</td></tr>';
+    tbl += '<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0;color:#718096">Orders</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">' + tOrders.length + ' (' + fmtPKR(totSales) + ')</td></tr>';
+    tbl += '<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0;color:#718096">Recovery</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">' + fmtPKR(totRec) + '</td></tr>';
+    tbl += '<tr><td style="padding:6px;color:#718096">Visits</td><td style="padding:6px">' + tVisits.length + '</td></tr>';
+    tbl += '</table>';
+
+    if (tOrders.length > 0) {
+      tbl += '<h3 style="color:#0A1628;margin-bottom:8px">Orders</h3>';
+      tbl += '<table style="width:100%;border-collapse:collapse;margin-bottom:16px">';
+      tbl += '<tr style="background:#0A1628;color:#fff"><th style="padding:8px">Customer</th><th style="padding:8px">Amount</th></tr>';
+      for (var i = 0; i < tOrders.length; i++) tbl += '<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0">' + tOrders[i].customerName + '</td><td style="padding:6px;border-bottom:1px solid #e2e8f0;font-weight:700">' + fmtPKR(tOrders[i].total) + '</td></tr>';
+      tbl += '</table>';
+    }
+
+    if (tVisits.length > 0) {
+      tbl += '<h3 style="color:#0A1628;margin-bottom:8px">Visits</h3>';
+      tbl += '<table style="width:100%;border-collapse:collapse;margin-bottom:16px">';
+      tbl += '<tr style="background:#0A1628;color:#fff"><th style="padding:8px">Customer</th><th style="padding:8px">Purpose</th><th style="padding:8px">Outcome</th></tr>';
+      for (var i = 0; i < tVisits.length; i++) tbl += '<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0">' + tVisits[i].customerName + '</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">' + tVisits[i].purpose + '</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">' + tVisits[i].outcome + '</td></tr>';
+      tbl += '</table>';
+    }
+
+    pdfExport('Daily Field Report - ' + CU.name + ' - ' + today, tbl);
+  });
+  });
+  });
+}
+
+// ============================================================
+// PDF EXPORT
+// ============================================================
+function pdfExport(title, bodyHTML) {
+  var w = window.open('', '_blank');
+  if (!w) { showToast('Allow popups to export PDF', 'error'); return; }
+  var dt = new Date().toLocaleString('en-PK');
+  var waUrl = 'https://wa.me/?text=' + encodeURIComponent(title + ' - Biorise Pharmaceuticals - ' + dt);
+
+  var h = '<!DOCTYPE html><html><head><meta charset=UTF-8><title>' + title + '<' + '/title>';
+  h += '<style>body{font-family:Arial,sans-serif;padding:20px;color:#1a202c}';
+  h += '.header{border-bottom:3px solid #C9A84C;padding-bottom:12px;margin-bottom:16px}';
+  h += '.logo-text{font-size:24px;font-weight:900;color:#0A1628}.logo-text em{color:#C9A84C;font-style:normal}';
+  h += '.meta{font-size:12px;color:#718096;margin-top:4px}';
+  h += '@media print{.no-print{display:none}}<' + '/style><' + '/head><body>';
+  h += '<div class="header"><div class="logo-text">Bio<em>rise</em> Pharmaceuticals<' + '/div>';
+  h += '<div class="meta">19-KM Lahore Road, Multan, Pakistan &middot; Generated: ' + dt + '<' + '/div><' + '/div>';
+  h += '<h2 style="color:#0A1628;margin-bottom:16px">' + title + '<' + '/h2>';
+  h += bodyHTML;
+  h += '<div class="no-print" style="margin-top:20px;border-top:1px solid #e2e8f0;padding-top:16px">';
+  h += '<button onclick="window.print()" style="padding:10px 22px;background:#0A1628;color:#fff;border:none;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer;margin-right:10px">&#128196; Print / Save PDF<' + '/button>';
+  h += '<a href="' + waUrl + '" target="_blank" style="padding:10px 22px;background:#25D366;color:#fff;border-radius:7px;font-size:14px;font-weight:700;text-decoration:none">&#128233; Share WhatsApp<' + '/a>';
+  h += '<' + '/div>';
+  h += '<div style="margin-top:20px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#a0aec0;text-align:center">';
+  h += 'Developed by <strong>Muhammad Mazhar ul Hassan</strong> &middot; All Legal Rights Reserved &copy; 2026 &middot; Biorise Pharmaceuticals';
+  h += '<' + '/div><' + '/body><' + '/html>';
+  w.document.write(h);
+  w.document.close();
+}
+
+// ============================================================
+// PWA SERVICE WORKER REGISTRATION
+// ============================================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js').then(function(reg) {
+      console.log('SW registered');
+    }).catch(function(e) {
+      console.log('SW registration failed', e);
+    });
+  });
+}
+
+// Update clock
+setInterval(function() { updateStatusBar(); }, 30000);
+</script>
+</body>
+</html>
