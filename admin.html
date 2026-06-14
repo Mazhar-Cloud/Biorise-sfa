@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0A1628">
+<title>Biorise SFA - Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:Arial,sans-serif;background:#f0f4f8;color:#1a202c;min-height:100vh}
+#login-screen{display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(160deg,#0A1628 0%,#2d3748 100%);padding:20px}
+.login-box{background:#fff;border-radius:16px;padding:36px 28px;width:100%;max-width:360px;box-shadow:0 24px 64px rgba(0,0,0,0.4)}
+.login-logo-mark{display:flex;align-items:center;justify-content:center;width:60px;height:60px;background:#0A1628;border-radius:14px;margin:0 auto 10px}
+.login-logo-mark span{color:#C9A84C;font-size:32px;font-weight:900}
+.login-title{font-size:20px;font-weight:800;color:#0A1628;text-align:center}
+.login-sub{font-size:12px;color:#718096;text-align:center;margin-top:4px;margin-bottom:20px}
+.gold-line{height:3px;background:linear-gradient(90deg,#C9A84C,#e8d08a,#C9A84C);border-radius:2px;margin-bottom:20px}
+.form-lbl{font-size:11px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block}
+.form-inp{width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;color:#1a202c;background:#fff;margin-bottom:14px}
+.form-inp:focus{border-color:#0A1628}
+.btn-login{width:100%;padding:13px;background:#0A1628;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:800;cursor:pointer;margin-top:4px}
+.login-err{background:#fff5f5;color:#c53030;border:1px solid #feb2b2;border-radius:7px;padding:9px 12px;font-size:12px;margin-top:10px;display:none;text-align:center;font-weight:600}
+.login-footer{text-align:center;font-size:10px;color:#a0aec0;margin-top:20px;line-height:1.6}
+#app{display:none;flex-direction:column;min-height:100vh}
+.topbar{background:#0A1628;color:#fff;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,0.25)}
+.topbar-brand{font-size:17px;font-weight:900}
+.topbar-brand em{color:#C9A84C;font-style:normal}
+.topbar-info{font-size:11px;opacity:0.7;margin-top:1px}
+.sync-ind{font-size:10px;color:#C9A84C;font-weight:700}
+.btn-sm-out{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px}
+.layout{display:flex;min-height:calc(100vh - 52px)}
+.sidebar{background:#0A1628;width:190px;flex-shrink:0;padding:12px 0;overflow-y:auto}
+.sidebar-section{padding:8px 16px 4px;font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-top:8px}
+.sidebar-item{padding:11px 16px;cursor:pointer;color:rgba(255,255,255,0.7);font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;border-left:3px solid transparent}
+.sidebar-item:hover{background:rgba(255,255,255,0.05);color:#fff}
+.sidebar-item.active{background:rgba(201,168,76,0.1);color:#C9A84C;border-left-color:#C9A84C}
+.main-area{flex:1;overflow:auto}
+.content{padding:16px;max-width:960px}
+@media(max-width:650px){.sidebar{display:none}.content{padding:12px}}
+.mob-tabs{display:none;overflow-x:auto;background:#0A1628;padding:0;white-space:nowrap}
+.mob-tab{display:inline-block;padding:10px 14px;color:rgba(255,255,255,0.6);font-size:11px;font-weight:600;cursor:pointer}
+.mob-tab.active{color:#C9A84C;border-bottom:2px solid #C9A84C}
+@media(max-width:650px){.mob-tabs{display:block}}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07)}
+.card-hd{font-size:14px;font-weight:800;color:#0A1628;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #f0f4f8;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:600px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+.stat-box{background:#fff;border-radius:10px;padding:14px 10px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.07);border-top:3px solid #e2e8f0}
+.stat-box.gold{border-top-color:#C9A84C}.stat-box.green{border-top-color:#38a169}.stat-box.red{border-top-color:#e53e3e}.stat-box.blue{border-top-color:#1a56db}.stat-box.navy{border-top-color:#0A1628}
+.stat-val{font-size:22px;font-weight:900;color:#0A1628;line-height:1}
+.stat-lbl{font-size:9px;color:#718096;margin-top:3px;text-transform:uppercase;letter-spacing:0.4px;font-weight:600}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:11px;font-weight:700;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;background:#fff;color:#1a202c;-webkit-appearance:none}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#0A1628}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{padding:10px 18px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:active{opacity:0.85}
+.btn-navy{background:#0A1628;color:#fff}.btn-gold{background:#C9A84C;color:#0A1628}.btn-green{background:#38a169;color:#fff}.btn-red{background:#e53e3e;color:#fff}.btn-ghost{background:#f0f4f8;color:#4a5568;border:none}
+.btn-full{width:100%;justify-content:center}.btn-sm{padding:6px 12px;font-size:12px}.btn-xs{padding:4px 8px;font-size:11px}
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:400px}
+th{background:#0A1628;color:#fff;padding:9px 10px;text-align:left;font-size:11px;font-weight:700;white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #f0f4f8;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbfc}
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.bg-green{background:#c6f6d5;color:#276749}.bg-yellow{background:#fefcbf;color:#975a16}.bg-red{background:#fed7d7;color:#9b2c2c}.bg-blue{background:#bee3f8;color:#2a69ac}.bg-gray{background:#e2e8f0;color:#4a5568}.bg-orange{background:#feebc8;color:#9c4221}
+.search-wrap{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.search-wrap input,.search-wrap select{padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;outline:none;background:#fff;flex:1;min-width:100px;-webkit-appearance:none}
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:9999;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,0.2);max-width:300px;text-align:center;transition:opacity 0.3s}
+.toast-success{background:#38a169;color:#fff}.toast-error{background:#e53e3e;color:#fff}.toast-info{background:#0A1628;color:#C9A84C}
+.empty{text-align:center;padding:32px 16px;color:#a0aec0}
+.empty-ico{font-size:40px;margin-bottom:8px}.empty-txt{font-size:13px;font-weight:600}
+.app-footer{text-align:center;font-size:10px;color:#a0aec0;padding:12px;background:#fff;border-top:1px solid #f0f4f8;line-height:1.6}
+.alert-box{padding:10px 14px;border-radius:8px;font-size:12px;font-weight:600;margin-bottom:10px}
+.alert-warn{background:#fefcbf;color:#975a16;border:1px solid #f6e05e}
+.alert-success{background:#c6f6d5;color:#276749;border:1px solid #9ae6b4}
+.prog-wrap{margin:8px 0}
+.prog-labels{display:flex;justify-content:space-between;font-size:11px;color:#4a5568;margin-bottom:4px;font-weight:600}
+.prog-bar{background:#e2e8f0;border-radius:20px;height:8px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#C9A84C,#e8a020);border-radius:20px}
+.variance-bad{color:#e53e3e;font-weight:700}.variance-ok{color:#38a169;font-weight:700}
+.fw7{font-weight:700}.f11{font-size:11px}.f12{font-size:12px}.f13{font-size:13px}
+.text-gold{color:#C9A84C}.text-green{color:#38a169}.text-red{color:#e53e3e}.text-gray{color:#718096}.text-navy{color:#0A1628}
+.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mb-8{margin-bottom:8px}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+<div class="login-box">
+  <div class="login-logo-mark"><span>B</span></div>
+  <div class="login-title">Biorise SFA</div>
+  <div class="login-sub">Admin Panel</div>
+  <div class="gold-line"></div>
+  <label class="form-lbl">Username</label>
+  <input class="form-inp" type="text" id="lu" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <label class="form-lbl">Password</label>
+  <input class="form-inp" type="password" id="lp" autocomplete="off">
+  <button class="btn-login" onclick="doLogin()">Login</button>
+  <div class="login-err" id="lerr">Invalid username or password.</div>
+  <div class="login-footer">Biorise Pharmaceuticals - Admin Panel<br>
+  <span style="font-size:9px">Developed by Muhammad Mazhar ul Hassan - All Rights Reserved 2026</span></div>
+</div>
+</div>
+
+<div id="app">
+<div class="topbar" style="display:flex;align-items:center;justify-content:space-between">
+  <div>
+    <div class="topbar-brand">Bio<em>rise</em> Admin</div>
+    <div class="topbar-info" id="topbar-info">Admin Panel</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span class="sync-ind" id="sync-ind">Connecting...</span>
+    <button class="btn-sm-out" onclick="doLogout()">Logout</button>
+  </div>
+</div>
+
+<div class="mob-tabs" id="mob-tabs">
+  <span class="mob-tab active" onclick="showTab(&apos;dashboard&apos;,this)">Dashboard</span>
+  <span class="mob-tab" onclick="showTab(&apos;orders&apos;,this)">Orders</span>
+  <span class="mob-tab" onclick="showTab(&apos;recovery&apos;,this)">Recovery</span>
+  <span class="mob-tab" onclick="showTab(&apos;visits&apos;,this)">Visits</span>
+  <span class="mob-tab" onclick="showTab(&apos;expenses&apos;,this)">Expenses</span>
+  <span class="mob-tab" onclick="showTab(&apos;journey&apos;,this)">KM Report</span>
+  <span class="mob-tab" onclick="showTab(&apos;targets&apos;,this)">Targets</span>
+  <span class="mob-tab" onclick="showTab(&apos;settings&apos;,this)">Settings</span>
+  <span class="mob-tab" onclick="showTab(&apos;apps&apos;,this)">Applications</span>
+  <span class="mob-tab" onclick="showTab(&apos;reports&apos;,this)">Reports</span>
+</div>
+
+<div class="layout">
+<nav class="sidebar">
+  <div class="sidebar-section">Overview</div>
+  <div class="sidebar-item active" onclick="showTab(&apos;dashboard&apos;,this)">&#9636; Dashboard</div>
+  <div class="sidebar-section">Operations</div>
+  <div class="sidebar-item" onclick="showTab(&apos;orders&apos;,this)">&#128203; All Orders</div>
+  <div class="sidebar-item" onclick="showTab(&apos;recovery&apos;,this)">&#8635; All Recovery</div>
+  <div class="sidebar-item" onclick="showTab(&apos;visits&apos;,this)">&#128205; All Visits</div>
+  <div class="sidebar-item" onclick="showTab(&apos;expenses&apos;,this)">&#128176; Expenses</div>
+  <div class="sidebar-item" onclick="showTab(&apos;journey&apos;,this)">&#128664; KM Report</div>
+  <div class="sidebar-section">Management</div>
+  <div class="sidebar-item" onclick="showTab(&apos;targets&apos;,this)">&#127919; Targets</div>
+  <div class="sidebar-item" onclick="showTab(&apos;settings&apos;,this)">&#9881; Settings</div>
+  <div class="sidebar-item" onclick="showTab(&apos;apps&apos;,this)">&#128221; Applications</div>
+  <div class="sidebar-section">Reports</div>
+  <div class="sidebar-item" onclick="showTab(&apos;reports&apos;,this)">&#128196; Reports</div>
+</nav>
+
+<div class="main-area">
+<div class="content" id="main-content"></div>
+<div class="app-footer">Developed by <strong>Muhammad Mazhar ul Hassan</strong> - All Legal Rights Reserved &copy; 2026 - Biorise Pharmaceuticals</div>
+</div>
+</div>
+</div>
+
+<script type="application/json" id="d-users">[{"id": 1, "username": "mazhar.admin", "password": "Adm!n@BR26", "role": "admin", "name": "Muhammad Mazhar ul Hassan", "region": "All"}, {"id": 2, "username": "manager.southpunjab", "password": "Gaw21!14", "role": "manager", "name": "Zeeshan Umar", "region": "South Punjab"}, {"id": 3, "username": "manager.upperpunjab", "password": "Baj39@81", "role": "manager", "name": "Humayun Butt", "region": "Upper Punjab"}, {"id": 4, "username": "manager.sindh", "password": "Jur38!85", "role": "manager", "name": "Aman Kumar", "region": "Sindh"}, {"id": 5, "username": "manager.mddirect", "password": "Lah99!53", "role": "manager", "name": "Abdul Wahid", "region": "MD Direct"}, {"id": 10, "username": "ajmal.khan", "password": "Lej53@21", "role": "officer", "name": "AJMAL KHAN", "region": "MD Direct"}, {"id": 11, "username": "abu.bakar.attock", "password": "Qap54$15", "role": "officer", "name": "Abu Bakar Attock", "region": "Upper Punjab"}, {"id": 12, "username": "ajeet.kumar", "password": "Suf58@80", "role": "officer", "name": "Ajeet Kumar", "region": "Sindh"}, {"id": 13, "username": "aman.kumar", "password": "Mup83#18", "role": "officer", "name": "Aman Kumar", "region": "Sindh"}, {"id": 14, "username": "amir.shehzad", "password": "Cem20#22", "role": "officer", "name": "Amir Shehzad", "region": "South Punjab"}, {"id": 15, "username": "amjad.ali", "password": "Qis91$30", "role": "officer", "name": "Amjad Ali", "region": "Sindh"}, {"id": 16, "username": "ashfaque.hussain", "password": "Pij95$99", "role": "officer", "name": "Ashfaque Hussain", "region": "Sindh"}, {"id": 17, "username": "asim.ali", "password": "Zay91#78", "role": "officer", "name": "Asim Ali", "region": "MD Direct"}, {"id": 18, "username": "athar.ahsan", "password": "Kes58$91", "role": "officer", "name": "Athar Ahsan", "region": "South Punjab"}, {"id": 19, "username": "bilal.ahmed", "password": "Wen17#14", "role": "officer", "name": "BILAL AHMED", "region": "South Punjab"}, {"id": 20, "username": "dr.shiv.kumar", "password": "Nol18#82", "role": "officer", "name": "Dr Shiv Kumar", "region": "Sindh"}, {"id": 21, "username": "fayyaz.hussain", "password": "Nez73!92", "role": "officer", "name": "Fayyaz Hussain", "region": "South Punjab"}, {"id": 22, "username": "habib.ur.rehman", "password": "Sel27#81", "role": "officer", "name": "Habib Ur Rehman", "region": "Sindh"}, {"id": 23, "username": "hafiz.tahir", "password": "Wix64!56", "role": "officer", "name": "Hafiz Tahir", "region": "South Punjab"}, {"id": 24, "username": "humayun.hussain", "password": "Kev73@16", "role": "officer", "name": "Humayun Hussain", "region": "Upper Punjab"}, {"id": 25, "username": "inham.ullah", "password": "Fez30!86", "role": "officer", "name": "Inham Ullah", "region": "Upper Punjab"}, {"id": 26, "username": "javed.khan", "password": "Doq86!77", "role": "officer", "name": "Javed Khan", "region": "Sindh"}, {"id": 27, "username": "khalid.hussain", "password": "Lub97@97", "role": "officer", "name": "Khalid Hussain", "region": "Sindh"}, {"id": 28, "username": "muhammad.hasnain", "password": "Wiz53@47", "role": "officer", "name": "MUHAMMAD HASNAIN", "region": "Upper Punjab"}, {"id": 29, "username": "muhammad.noman", "password": "Res10$74", "role": "officer", "name": "MUHAMMAD NOMAN", "region": "MD Direct"}, {"id": 30, "username": "mohsin.javed", "password": "Huf90$91", "role": "officer", "name": "Mohsin Javed", "region": "South Punjab"}, {"id": 31, "username": "mubashir.ali", "password": "Vuj29$30", "role": "officer", "name": "Mubashir Ali", "region": "South Punjab"}, {"id": 32, "username": "muhammad.naeem", "password": "Wub86$72", "role": "officer", "name": "Muhammad Naeem", "region": "South Punjab"}, {"id": 33, "username": "muhammad.rashid", "password": "Bap49#17", "role": "officer", "name": "Muhammad Rashid", "region": "South Punjab"}, {"id": 34, "username": "muhammad.zain", "password": "Kud20!18", "role": "officer", "name": "Muhammad Zain", "region": "Upper Punjab"}, {"id": 35, "username": "muhsin.tariq", "password": "Weg94!80", "role": "officer", "name": "Muhsin Tariq", "region": "Sindh"}, {"id": 36, "username": "muslim.abbas", "password": "Hiv87!37", "role": "officer", "name": "Muslim Abbas", "region": "Sindh"}, {"id": 37, "username": "qurban.ali.gaho", "password": "Wem61$66", "role": "officer", "name": "Qurban Ali Gaho", "region": "Sindh"}, {"id": 38, "username": "rakesh.kumar", "password": "Vof41#18", "role": "officer", "name": "Rakesh Kumar", "region": "Sindh"}, {"id": 39, "username": "rizwan.abbas", "password": "Nax80#85", "role": "officer", "name": "Rizwan Abbas", "region": "South Punjab"}, {"id": 40, "username": "sami.khan", "password": "Kad90@39", "role": "officer", "name": "SAMI KHAN", "region": "MD Direct"}, {"id": 41, "username": "sawai.mal", "password": "Dan19#45", "role": "officer", "name": "Sawai Mal", "region": "Sindh"}, {"id": 42, "username": "shabir.ahmed", "password": "Tew26!41", "role": "officer", "name": "Shabir Ahmed", "region": "Sindh"}, {"id": 43, "username": "shehbaz.khan", "password": "Toj22@94", "role": "officer", "name": "Shehbaz Khan", "region": "South Punjab"}, {"id": 44, "username": "shehzad.haider", "password": "Rir62!16", "role": "officer", "name": "Shehzad Haider", "region": "South Punjab"}, {"id": 45, "username": "shehzad.panhwar", "password": "Zac61$23", "role": "officer", "name": "Shehzad Panhwar", "region": "Sindh"}, {"id": 46, "username": "sheikh.danish.ali", "password": "Kej78!27", "role": "officer", "name": "Sheikh Danish Ali", "region": "South Punjab"}, {"id": 47, "username": "sheraz.khalid", "password": "Rel69#19", "role": "officer", "name": "Sheraz Khalid", "region": "South Punjab"}, {"id": 48, "username": "shivlal", "password": "Suf16@21", "role": "officer", "name": "Shivlal", "region": "Sindh"}, {"id": 49, "username": "talha.saeed", "password": "Ker72!37", "role": "officer", "name": "Talha Saeed", "region": "Upper Punjab"}, {"id": 50, "username": "umar.khan", "password": "Qah58@59", "role": "officer", "name": "Umar Khan", "region": "South Punjab"}, {"id": 51, "username": "wajahat.ali.shah", "password": "Lom64!29", "role": "officer", "name": "Wajahat Ali Shah", "region": "South Punjab"}, {"id": 52, "username": "waqar.hussain", "password": "Jij17@50", "role": "officer", "name": "Waqar Hussain", "region": "South Punjab"}, {"id": 53, "username": "yousaf.saeed", "password": "Cax71#17", "role": "officer", "name": "Yousaf Saeed", "region": "Upper Punjab"}, {"id": 54, "username": "zahid.nafees", "password": "Vah18@96", "role": "officer", "name": "Zahid Nafees", "region": "South Punjab"}, {"id": 55, "username": "zeeshan.umar", "password": "Kof82#84", "role": "officer", "name": "Zeeshan Umar", "region": "South Punjab"}]</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+var firebaseConfig = {
+    apiKey: "AIzaSyCKy-BH2UrvBN3tpBuHlrt0MTWd0Wxg8O0",
+    authDomain: "biorise-sfa.firebaseapp.com",
+    projectId: "biorise-sfa",
+    storageBucket: "biorise-sfa.firebasestorage.app",
+    messagingSenderId: "923892212613",
+    appId: "1:923892212613:web:30a6123963b2b858919aec"
+  };
+var fbApp = initializeApp(firebaseConfig);
+var db = getFirestore(fbApp);
+var USERS = JSON.parse(document.getElementById("d-users").textContent);
+var CU = null;
+var OFFICERS = USERS.filter(function(u){return u.role==="officer";});
+var REGIONS = ["South Punjab","Upper Punjab","Sindh","MD Direct","Balochistan","KPK"];
+
+function fmtPKR(n){return "PKR "+(parseFloat(n)||0).toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:0});}
+function fmtDate(d){if(!d)return "-";var dt=new Date(d);return dt.toLocaleDateString("en-PK",{day:"2-digit",month:"short",year:"numeric"})+" "+dt.toLocaleTimeString("en-PK",{hour:"2-digit",minute:"2-digit",hour12:true});}
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function fiscalQuarter(){var now=new Date(),m=now.getMonth(),y=now.getFullYear(),qEnd,qLabel;if(m>=6&&m<=8){qEnd=new Date(y,9,1);qLabel="Q1 Jul-Sep";}else if(m>=9&&m<=11){qEnd=new Date(y+1,0,1);qLabel="Q2 Oct-Dec";}else if(m>=0&&m<=2){qEnd=new Date(y,3,1);qLabel="Q3 Jan-Mar";}else{qEnd=new Date(y,6,1);qLabel="Q4 Apr-Jun";}return{label:qLabel,daysLeft:Math.max(1,Math.ceil((qEnd-now)/86400000))};}
+function getQuarterStart(){var now=new Date(),m=now.getMonth(),y=now.getFullYear();if(m>=6&&m<=8)return new Date(y,6,1);else if(m>=9&&m<=11)return new Date(y,9,1);else if(m>=0&&m<=2)return new Date(y,0,1);else return new Date(y,3,1);}
+function getMonthStart(){var n=new Date();return new Date(n.getFullYear(),n.getMonth(),1);}
+
+function showToast(msg,type){var el=document.createElement("div");el.className="toast toast-"+(type||"info");el.textContent=msg;document.body.appendChild(el);setTimeout(function(){el.style.opacity="0";setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},300);},3000);}
+function setSyncStatus(s){var el=document.getElementById("sync-ind");if(!el)return;el.textContent=s==="ok"?"Synced":s==="syncing"?"Syncing...":"Offline";el.style.color=s==="ok"?"#C9A84C":s==="syncing"?"#fefcbf":"#e53e3e";}
+
+function fbSet(col,id,data,cb){setSyncStatus("syncing");setDoc(doc(db,col,id),data,{merge:true}).then(function(){setSyncStatus("ok");if(cb)cb();}).catch(function(e){console.log(e);setSyncStatus("error");if(cb)cb();});}
+function fbGetSetting(key,cb){getDoc(doc(db,"settings",key)).then(function(d){cb(d.exists()?d.data().val:null);}).catch(function(){cb(null);});}
+function fbSetSetting(key,val){setDoc(doc(db,"settings",key),{val:val}).catch(function(e){console.log(e);});}
+function fbGetAll(col,cb){getDocs(collection(db,col)).then(function(snap){var res=[];snap.forEach(function(d){res.push(Object.assign({_id:d.id},d.data()));});cb(res);}).catch(function(e){console.log(e);cb([]);});}
+
+function doLogin(){
+  var u=document.getElementById("lu").value.trim().toLowerCase();
+  var p=document.getElementById("lp").value.trim();
+  var found=null;
+  for(var i=0;i<USERS.length;i++){if(USERS[i].username.toLowerCase()===u&&USERS[i].password===p&&USERS[i].role==="admin"){found=USERS[i];break;}}
+  if(!found){document.getElementById("lerr").style.display="block";return;}
+  activateSession(found);
+}
+
+function activateSession(userObj){
+  CU=userObj;
+  try{sessionStorage.setItem("br_adm",JSON.stringify({u:userObj.username,p:userObj.password}));}catch(e){}
+  document.getElementById("lerr").style.display="none";
+  document.getElementById("topbar-info").textContent="Admin: "+CU.name;
+  document.getElementById("login-screen").style.display="none";
+  document.getElementById("app").style.display="flex";
+  document.getElementById("app").style.flexDirection="column";
+  showTab("dashboard",null);setSyncStatus("ok");
+}
+
+function checkExistingSession(){
+  try{var s=sessionStorage.getItem("br_adm");if(s){var p=JSON.parse(s);for(var i=0;i<USERS.length;i++){if(USERS[i].username===p.u&&USERS[i].password===p.p&&USERS[i].role==="admin"){activateSession(USERS[i]);return;}}}}catch(e){}
+  document.getElementById("login-screen").style.display="flex";
+}
+
+function doLogout(){
+  try{sessionStorage.removeItem("br_adm");}catch(e){}
+  CU=null;document.getElementById("login-screen").style.display="flex";document.getElementById("app").style.display="none";
+  document.getElementById("lu").value="";document.getElementById("lp").value="";
+}
+
+function showTab(tab,el){
+  document.querySelectorAll(".sidebar-item").forEach(function(s){s.classList.remove("active");});
+  document.querySelectorAll(".mob-tab").forEach(function(s){s.classList.remove("active");});
+  if(el){el.classList.add("active");}
+  var c=document.getElementById("main-content");
+  c.innerHTML="<div style="text-align:center;padding:40px;color:#a0aec0">Loading...</div>";
+  if(tab==="dashboard")renderDashboard(c);
+  else if(tab==="orders")renderOrders(c);
+  else if(tab==="recovery")renderRecovery(c);
+  else if(tab==="visits")renderVisits(c);
+  else if(tab==="expenses")renderExpenses(c);
+  else if(tab==="journey")renderJourney(c);
+  else if(tab==="targets")renderTargets(c);
+  else if(tab==="settings")renderSettings(c);
+  else if(tab==="apps")renderApps(c);
+  else if(tab==="reports")renderReports(c);
+}
+
+function renderDashboard(c){
+  var Q=fiscalQuarter();var qStart=getQuarterStart();var mStart=getMonthStart();
+  fbGetAll("orders",function(orders){fbGetAll("recoveries",function(recs){fbGetAll("visits",function(visits){
+    var qOrders=orders.filter(function(o){return o.createdAt&&new Date(o.createdAt)>=qStart;});
+    var mOrders=orders.filter(function(o){return o.createdAt&&new Date(o.createdAt)>=mStart;});
+    var qSales=0;qOrders.forEach(function(o){qSales+=(o.total||0);});
+    var mSales=0;mOrders.forEach(function(o){mSales+=(o.total||0);});
+    var totRec=0;recs.forEach(function(r){totRec+=(r.amount||0);});
+    var pending=orders.filter(function(o){return(o.status||"Pending")==="Pending";});
+    var todayVis=visits.filter(function(v){return v.date===todayStr();});
+    var flagged=visits.filter(function(v){return v.flagged;});
+
+    var html="<div class="stat-grid">";
+    html+="<div class="stat-box gold"><div class="stat-val">"+qOrders.length+"</div><div class="stat-lbl">Q Orders</div></div>";
+    html+="<div class="stat-box navy"><div class="stat-val" style="font-size:14px">"+fmtPKR(qSales).replace("PKR ","")+"</div><div class="stat-lbl">Q Sales PKR</div></div>";
+    html+="<div class="stat-box green"><div class="stat-val" style="font-size:14px">"+fmtPKR(totRec).replace("PKR ","")+"</div><div class="stat-lbl">Total Recovery</div></div>";
+    html+="<div class="stat-box red"><div class="stat-val">"+pending.length+"</div><div class="stat-lbl">Pending Orders</div></div>";
+    html+="</div><div class="stat-grid">";
+    html+="<div class="stat-box"><div class="stat-val">"+mOrders.length+"</div><div class="stat-lbl">M Orders</div></div>";
+    html+="<div class="stat-box"><div class="stat-val" style="font-size:14px">"+fmtPKR(mSales).replace("PKR ","")+"</div><div class="stat-lbl">M Sales PKR</div></div>";
+    html+="<div class="stat-box"><div class="stat-val">"+todayVis.length+"</div><div class="stat-lbl">Visits Today</div></div>";
+    html+="<div class="stat-box"><div class="stat-val">"+flagged.length+"</div><div class="stat-lbl">Flagged Visits</div></div>";
+    html+="</div>";
+
+    html+="<div class="card"><div class="card-hd">Region Breakdown - "+Q.label+"</div>";
+    html+="<div class="tbl-wrap"><table><thead><tr><th>Region</th><th>Q Orders</th><th>Q Sales</th><th>M Sales</th><th>Recovery</th></tr></thead><tbody>";
+    REGIONS.forEach(function(reg){
+      var ro=qOrders.filter(function(o){return o.region===reg;});
+      var mo=mOrders.filter(function(o){return o.region===reg;});
+      var rr=recs.filter(function(r){return r.region===reg;});
+      var rs=0;ro.forEach(function(o){rs+=(o.total||0);});
+      var ms=0;mo.forEach(function(o){ms+=(o.total||0);});
+      var rrt=0;rr.forEach(function(r){rrt+=(r.amount||0);});
+      html+="<tr><td class="fw7">"+reg+"</td><td>"+ro.length+"</td><td>"+fmtPKR(rs)+"</td><td>"+fmtPKR(ms)+"</td><td>"+fmtPKR(rrt)+"</td></tr>";
+    });
+    html+="</tbody></table></div></div>";
+
+    html+="<div class="card"><div class="card-hd">Officer Activity Today</div>";
+    html+="<div class="tbl-wrap"><table><thead><tr><th>Officer</th><th>Region</th><th>Visits</th><th>Orders</th><th>Status</th></tr></thead><tbody>";
+    OFFICERS.forEach(function(off){
+      var ov=todayVis.filter(function(v){return v.officerUsername===off.username;}).length;
+      var oo=orders.filter(function(o){return o.officerUsername===off.username&&o.createdAt&&o.createdAt.indexOf(todayStr())===0;}).length;
+      var active=ov>0||oo>0;
+      html+="<tr><td class="fw7 "+(active?"text-green":"text-gray")+"">"+off.name+"</td><td class="f11">"+off.region+"</td><td>"+ov+"</td><td>"+oo+"</td><td><span class="badge "+(active?"bg-green":"bg-gray")+"">"+( active?"Active":"No Activity")+"</span></td></tr>";
+    });
+    html+="</tbody></table></div></div>";
+    c.innerHTML=html;
+  });});});
+}
+
+function renderOrders(c){
+  fbGetAll("orders",function(orders){
+    window._adminOrders=orders;
+    var html="<div class="card"><div class="card-hd">All Orders <span class="badge bg-gray">"+orders.length+"</span></div>";
+    html+="<div class="search-wrap"><input type="search" id="ord-s" placeholder="Search..." oninput="filterAdminOrders()">";
+    html+="<select id="ord-r" onchange="filterAdminOrders()"><option value="">All Regions</option>";
+    REGIONS.forEach(function(r){html+="<option>"+r+"</option>";});
+    html+="</select><select id="ord-st" onchange="filterAdminOrders()"><option value="">All Status</option><option>Pending</option><option>Approved</option><option>Rejected</option></select></div>";
+    html+="<div class="tbl-wrap"><table><thead><tr><th>Officer</th><th>Region</th><th>Customer</th><th>Amount</th><th>Items</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody id="ord-tbody"></tbody></table></div>";
+    html+="<button class="btn btn-gold mt-8" onclick="exportTablePDF(&apos;ord-tbody&apos;,&apos;All Orders Report&apos;)">Export PDF</button></div>";
+    c.innerHTML=html;filterAdminOrders();
+  });
+}
+function filterAdminOrders(){
+  var s=document.getElementById("ord-s")?document.getElementById("ord-s").value.toLowerCase():"";
+  var r=document.getElementById("ord-r")?document.getElementById("ord-r").value:"";
+  var st=document.getElementById("ord-st")?document.getElementById("ord-st").value:"";
+  var filtered=(window._adminOrders||[]).filter(function(o){
+    return(!s||(o.officerName||"").toLowerCase().indexOf(s)!==-1||(o.customerName||"").toLowerCase().indexOf(s)!==-1)&&(!r||o.region===r)&&(!st||(o.status||"Pending")===st);
+  }).sort(function(a,b){return new Date(b.createdAt||0)-new Date(a.createdAt||0);});
+  var tbody=document.getElementById("ord-tbody");if(!tbody)return;
+  if(!filtered.length){tbody.innerHTML="<tr><td colspan="8" style="text-align:center;color:#a0aec0;padding:16px">No results</td></tr>";return;}
+  var html="";
+  filtered.slice(0,100).forEach(function(o){
+    var bc=o.status==="Approved"?"bg-green":o.status==="Rejected"?"bg-red":"bg-yellow";
+    html+="<tr><td class="f11 fw7">"+o.officerName+"</td><td class="f11"><span class="badge bg-gray">"+o.region+"</span></td><td>"+o.customerName+"<div class="f11 text-gray">"+o.customerCity+"</div></td><td class="fw7">"+fmtPKR(o.total)+"</td><td class="f11">"+(o.items?o.items.length:0)+" items</td><td class="f11">"+(o.createdAt?new Date(o.createdAt).toLocaleDateString("en-PK"):"-")+"</td><td><span class="badge "+bc+"">"+(o.status||"Pending")+"</span></td>";
+    html+="<td>"+((o.status||"Pending")==="Pending"?"<button class="btn btn-green btn-xs" data-oid=""+o._id+"" onclick="adminApproveOrder(this)">OK</button> <button class="btn btn-red btn-xs" data-oid=""+o._id+"" onclick="adminRejectOrder(this)">Reject</button>":"")+"</td></tr>";
+  });
+  tbody.innerHTML=html;
+}
+function adminApproveOrder(btn){var oid=btn.getAttribute("data-oid");if(!oid)return;fbSet("orders",oid,{status:"Approved",approvedBy:CU.name,approvedAt:new Date().toISOString()},function(){showToast("Order approved","success");(window._adminOrders||[]).forEach(function(o){if(o._id===oid)o.status="Approved";});filterAdminOrders();});}
+function adminRejectOrder(btn){var oid=btn.getAttribute("data-oid");if(!oid)return;fbSet("orders",oid,{status:"Rejected",rejectedBy:CU.name,rejectedAt:new Date().toISOString()},function(){showToast("Order rejected","info");(window._adminOrders||[]).forEach(function(o){if(o._id===oid)o.status="Rejected";});filterAdminOrders();});}
+
+function renderRecovery(c){
+  fbGetAll("recoveries",function(recs){
+    var total=0;recs.forEach(function(r){total+=(r.amount||0);});
+    var html="<div class="card"><div class="card-hd">All Recovery <span class="f13 fw7 text-green">"+fmtPKR(total)+"</span></div>";
+    html+="<div class="tbl-wrap"><table><thead><tr><th>Officer</th><th>Region</th><th>Customer</th><th>Amount</th><th>Method</th><th>Ref</th><th>Date</th><th>Status</th></tr></thead><tbody>";
+    if(!recs.length){html+="<tr><td colspan="8" style="text-align:center;color:#a0aec0;padding:16px">No recoveries yet</td></tr>";}
+    recs.slice().sort(function(a,b){return new Date(b.createdAt||0)-new Date(a.createdAt||0);}).slice(0,100).forEach(function(r){
+      html+="<tr><td class="f11 fw7">"+r.officerName+"</td><td class="f11"><span class="badge bg-gray">"+r.region+"</span></td><td>"+r.customerName+"</td><td class="fw7">"+fmtPKR(r.amount)+"</td><td>"+r.method+"</td><td class="f11">"+(r.ref||"-")+"</td><td class="f11">"+(r.createdAt?new Date(r.createdAt).toLocaleDateString("en-PK"):"-")+"</td><td><span class="badge "+(r.verified?"bg-green":"bg-yellow")+"">"+(r.verified?"Verified":"Pending")+"</span></td></tr>";
+    });
+    html+="</tbody></table></div><button class="btn btn-gold mt-8" onclick="exportTablePDF(&apos;rec-export&apos;,&apos;Recovery Report&apos;)">Export PDF</button></div>";
+    c.innerHTML=html;
+  });
+}
+
+function renderVisits(c){
+  fbGetAll("visits",function(visits){
+    var flagged=visits.filter(function(v){return v.flagged;});
+    var html="<div class="card"><div class="card-hd">All Visits <span class="badge bg-gray">"+visits.length+"</span>"+(flagged.length?" <span class="badge bg-red">"+flagged.length+" flagged</span>":"")+"</div>";
+    html+="<div class="tbl-wrap"><table><thead><tr><th>Officer</th><th>Region</th><th>Customer</th><th>Purpose</th><th>Outcome</th><th>GPS</th><th>Photo</th><th>Date</th></tr></thead><tbody>";
+    if(!visits.length){html+="<tr><td colspan="8" style="text-align:center;color:#a0aec0;padding:16px">No visits yet</td></tr>";}
+    visits.slice().sort(function(a,b){return new Date(b.createdAt||0)-new Date(a.createdAt||0);}).slice(0,100).forEach(function(v){
+      var gps=v.checkinGPS?"<span class="badge bg-green">OK</span>":"<span class="badge bg-red">None</span>";
+      var photo=v.photo?"<span class="badge bg-green">OK</span>":(v.photoDeclined?"<span class="badge bg-orange">Declined</span>":"<span class="badge bg-red">None</span>");
+      html+="<tr><td class="f11 fw7">"+v.officerName+"</td><td class="f11"><span class="badge bg-gray">"+v.region+"</span></td><td>"+v.customerName+"</td><td class="f11">"+v.purpose+"</td><td class="f11">"+v.outcome+"</td><td>"+gps+"</td><td>"+photo+"</td><td class="f11">"+(v.createdAt?new Date(v.createdAt).toLocaleDateString("en-PK"):"-")+"</td></tr>";
+    });
+    html+="</tbody></table></div></div>";
+    c.innerHTML=html;
+  });
+}
+
+function renderExpenses(c){
+  fbGetAll("expenses",function(exps){fbGetSetting("petrol_rate",function(rate){
+    var pr=parseFloat(rate)||0;
+    var pendingAdmin=exps.filter(function(e){return e.managerApproved&&!e.adminApproved&&!e.rejected;});
+    var html="<div class="card"><div class="card-hd">All Expenses</div>";
+    if(pendingAdmin.length)html+="<div class="alert-box alert-warn">"+pendingAdmin.length+" awaiting your final approval</div>";
+    if(pr>0)html+="<div class="alert-box alert-success">Fuel Rate: PKR "+pr+"/L | Per KM: PKR "+(pr*0.02).toFixed(2)+" | Formula: KM x 0.02 x "+pr+"</div>";
+    html+="<div class="tbl-wrap"><table><thead><tr><th>Officer</th><th>Region</th><th>Type</th><th>Claimed</th><th>KM</th><th>Allowed</th><th>Variance</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody>";
+    if(!exps.length)html+="<tr><td colspan="10" style="text-align:center;color:#a0aec0;padding:16px">No expenses yet</td></tr>";
+    exps.slice().sort(function(a,b){return new Date(b.createdAt||0)-new Date(a.createdAt||0);}).slice(0,100).forEach(function(e){
+      var allowed="-";var variance="-";var varClass="";
+      if(e.isFuel&&pr>0&&e.officerKm>0){
+        var calc=e.officerKm*0.02*pr;
+        allowed=fmtPKR(calc);
+        var diff=e.amount-calc;
+        variance=(diff>0?"+":"")+diff.toFixed(0);
+        varClass=Math.abs(diff)>50?(diff>0?"variance-bad":"variance-ok"):"";
+      }
+      var st=e.adminApproved?"Admin OK":e.rejected?"Rejected":e.managerApproved?"Mgr OK":"Pending";
+      var sc=e.adminApproved?"bg-green":e.rejected?"bg-red":e.managerApproved?"bg-blue":"bg-yellow";
+      html+="<tr><td class="f11 fw7">"+e.officerName+"</td><td class="f11">"+e.region+"</td><td class="f11">"+e.type+"</td><td class="fw7">"+fmtPKR(e.amount)+"</td><td class="f11">"+(e.officerKm||"-")+"</td><td class="f11">"+allowed+"</td><td class="f11 "+varClass+"">"+variance+"</td><td class="f11">"+(e.date||"-")+"</td><td><span class="badge "+sc+"">"+st+"</span></td>";
+      html+="<td>"+(e.managerApproved&&!e.adminApproved&&!e.rejected?"<button class="btn btn-green btn-xs" data-eid=""+e._id+"" onclick="adminAppExp(this)">OK</button> <button class="btn btn-red btn-xs" data-eid=""+e._id+"" onclick="adminRejExp(this)">Reject</button>":"")+"</td></tr>";
+    });
+    html+="</tbody></table></div></div>";
+    c.innerHTML=html;
+  });});
+}
+function adminAppExp(btn){var eid=btn.getAttribute("data-eid");if(!eid)return;fbSet("expenses",eid,{adminApproved:true,adminApprovedBy:CU.name,adminApprovedAt:new Date().toISOString()},function(){showToast("Approved","success");renderExpenses(document.getElementById("main-content"));});}
+function adminRejExp(btn){var eid=btn.getAttribute("data-eid");if(!eid)return;fbSet("expenses",eid,{rejected:true,rejectedBy:CU.name,rejectedAt:new Date().toISOString()},function(){showToast("Rejected","info");renderExpenses(document.getElementById("main-content"));});}
+
+function renderJourney(c){
+  fbGetAll("journey",function(journeys){
+    var ended=journeys.filter(function(j){return j.endTime;});
+    var flagged=ended.filter(function(j){return j.flagged;});
+    var html="<div class="card"><div class="card-hd">KM Variance Report <span class="badge bg-gray">"+ended.length+" journeys</span>"+(flagged.length?" <span class="badge bg-red">"+flagged.length+" flagged</span>":"")+"</div>";
+    html+="<div class="f12 text-gray mb-8">Flagged = Odometer KM vs GPS KM variance exceeds 15%. Only completed journeys shown.</div>";
+    html+="<div class="tbl-wrap"><table><thead><tr><th>Officer</th><th>Region</th><th>Date</th><th>Start</th><th>End</th><th>Odo KM</th><th>GPS KM</th><th>Variance</th><th>Var%</th><th>Flag</th></tr></thead><tbody>";
+    if(!ended.length)html+="<tr><td colspan="10" style="text-align:center;color:#a0aec0;padding:16px">No completed journeys yet</td></tr>";
+    ended.slice().sort(function(a,b){return new Date(b.date||0)-new Date(a.date||0);}).slice(0,100).forEach(function(j){
+      var varPct=j.variancePct?parseFloat(j.variancePct).toFixed(1):"-";
+      var varKm=j.variance?parseFloat(j.variance).toFixed(1)+" km":"-";
+      var startT=j.startTime?new Date(j.startTime).toLocaleTimeString("en-PK",{hour:"2-digit",minute:"2-digit",hour12:true}):"-";
+      var endT=j.endTime?new Date(j.endTime).toLocaleTimeString("en-PK",{hour:"2-digit",minute:"2-digit",hour12:true}):"-";
+      html+="<tr><td class="f11 fw7">"+j.officerName+"</td><td class="f11">"+j.region+"</td><td class="f11">"+j.date+"</td><td class="f11">"+startT+"</td><td class="f11">"+endT+"</td>";
+      html+="<td class="fw7">"+(j.odoKm||"-")+"</td><td>"+(j.gpsKm?parseFloat(j.gpsKm).toFixed(1):"-")+"</td>";
+      html+="<td class="f11 "+(j.flagged?"variance-bad":"variance-ok")+"">"+varKm+"</td>";
+      html+="<td class="fw7 "+(j.flagged?"variance-bad":"variance-ok")+"">"+varPct+"%</td>";
+      html+="<td>"+(j.flagged?"<span class="badge bg-red">Flagged</span>":"<span class="badge bg-green">Clean</span>")+"</td></tr>";
+    });
+    html+="</tbody></table></div><button class="btn btn-gold mt-8" onclick="exportJourneyPDF()">Export KM Report PDF</button></div>";
+    c.innerHTML=html;
+    window._journeyData=ended;
+  });
+}
+function exportJourneyPDF(){
+  var data=window._journeyData||[];
+  var tbl="<table style="width:100%;border-collapse:collapse"><tr style="background:#0A1628;color:#fff"><th style="padding:7px">Officer</th><th style="padding:7px">Date</th><th style="padding:7px">Odo KM</th><th style="padding:7px">GPS KM</th><th style="padding:7px">Variance</th><th style="padding:7px">Flag</th></tr>";
+  data.forEach(function(j){tbl+="<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0">"+j.officerName+"</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">"+j.date+"</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">"+( j.odoKm||"-")+"</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">"+(j.gpsKm?parseFloat(j.gpsKm).toFixed(1):"-")+"</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">"+( j.variancePct?parseFloat(j.variancePct).toFixed(1)+"%":"-")+"</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">"+(j.flagged?"FLAGGED":"Clean")+"</td></tr>";});
+  tbl+="</table>";
+  pdfExport("KM Variance Report - Biorise Pharmaceuticals",tbl);
+}
+
+function renderTargets(c){
+  var html="<div class="card"><div class="card-hd">Set Officer Quarterly Targets</div>";
+  html+="<div class="f12 text-gray mb-8">Targets are applied immediately. Officers see their target in real time.</div>";
+  html+="<div class="tbl-wrap"><table><thead><tr><th>Officer</th><th>Region</th><th>Current Target</th><th>New Target (PKR)</th><th></th></tr></thead><tbody id="tgt-tbody"><tr><td colspan="5" style="text-align:center;padding:20px;color:#a0aec0">Loading targets...</td></tr></tbody></table></div></div>";
+  c.innerHTML=html;
+  var rows=[];var done=0;
+  if(!OFFICERS.length){document.getElementById("tgt-tbody").innerHTML="<tr><td colspan="5" style="text-align:center;color:#a0aec0">No officers</td></tr>";return;}
+  OFFICERS.forEach(function(off){
+    fbGetSetting("target_"+off.username,function(val){
+      rows.push({off:off,target:parseFloat(val)||0});
+      done++;
+      if(done===OFFICERS.length){
+        rows.sort(function(a,b){return a.off.region.localeCompare(b.off.region)||a.off.name.localeCompare(b.off.name);});
+        var h="";
+        rows.forEach(function(r){
+          h+="<tr><td class="fw7">"+r.off.name+"</td><td><span class="badge bg-gray">"+r.off.region+"</span></td><td>"+fmtPKR(r.target)+"</td>";
+          h+="<td><input type="number" id="tgt_"+r.off.username+"" placeholder="e.g. 500000" style="width:140px;padding:6px 10px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:13px"></td>";
+          h+="<td><button class="btn btn-navy btn-xs" data-uname=""+r.off.username+"" data-name=""+r.off.name+"" onclick="saveTarget(this)">Save</button></td></tr>";
+        });
+        var tb=document.getElementById("tgt-tbody");if(tb)tb.innerHTML=h;
+      }
+    });
+  });
+}
+function saveTarget(btn){
+  var uname=btn.getAttribute("data-uname");var name=btn.getAttribute("data-name");
+  var inp=document.getElementById("tgt_"+uname);if(!inp)return;
+  var val=parseFloat(inp.value);
+  if(!val||val<=0){showToast("Enter valid target","error");return;}
+  fbSetSetting("target_"+uname,val);
+  showToast("Target saved for "+name,"success");inp.value="";
+}
+
+function renderSettings(c){
+  fbGetSetting("petrol_rate",function(rate){
+    var html="<div class="card"><div class="card-hd">Fuel Rate Setting</div>";
+    html+="<div class="alert-box alert-success">Current Rate: <strong>"+(rate?"PKR "+rate+"/Litre | Per KM Allowed: PKR "+(parseFloat(rate)*0.02).toFixed(2):"Not set - officers cannot calculate fuel expenses")+"</strong></div>";
+    html+="<div class="fg-row"><div class="fg"><label>Petrol Rate (PKR per Litre)</label><input type="number" id="petrol-inp" placeholder="e.g. 278" value=""+(rate||"")+"" step="0.01"></div>";
+    html+="<div class="fg" style="display:flex;align-items:flex-end"><button class="btn btn-green btn-full" onclick="savePetrolRate()">Save - Apply to All Officers Now</button></div></div>";
+    html+="<div class="f11 text-gray">Formula applied in expense report: Officer KM x 0.02 x Petrol Rate = Allowed Amount</div></div>";
+    c.innerHTML=html;
+  });
+}
+function savePetrolRate(){
+  var val=parseFloat(document.getElementById("petrol-inp").value);
+  if(!val||val<=0){showToast("Enter valid rate","error");return;}
+  fbSetSetting("petrol_rate",val);
+  showToast("Petrol rate PKR "+val+"/L saved - applied to all officers immediately","success");
+  renderSettings(document.getElementById("main-content"));
+}
+
+function renderApps(c){
+  fbGetAll("apps",function(apps){
+    var html="<div class="card"><div class="card-hd">All Applications</div>";
+    var awaiting=apps.filter(function(a){return a.managerApproved&&!a.adminApproved&&!a.rejected;});
+    if(awaiting.length)html+="<div class="alert-box alert-warn">"+awaiting.length+" forwarded by managers - awaiting your decision</div>";
+    if(!apps.length){html+="<div class="empty"><div class="empty-ico">&#128221;</div><div class="empty-txt">No applications yet</div></div>";}
+    else{
+      html+="<div class="tbl-wrap"><table><thead><tr><th>Officer</th><th>Region</th><th>Type</th><th>Subject</th><th>Priority</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody>";
+      apps.slice().sort(function(a,b){return new Date(b.createdAt||0)-new Date(a.createdAt||0);}).forEach(function(a){
+        var st=a.adminApproved?"Admin OK":a.rejected?"Rejected":a.managerApproved?"Mgr OK":"Pending";
+        var sc=a.adminApproved?"bg-green":a.rejected?"bg-red":a.managerApproved?"bg-blue":"bg-yellow";
+        html+="<tr><td class="f11 fw7">"+a.officerName+"</td><td class="f11">"+a.region+"</td><td>"+a.type+"</td><td class="f12">"+a.subject+"</td><td><span class="badge "+(a.priority==="Urgent"?"bg-red":"bg-gray")+"">"+a.priority+"</span></td><td class="f11">"+(a.createdAt?new Date(a.createdAt).toLocaleDateString("en-PK"):"-")+"</td><td><span class="badge "+sc+"">"+st+"</span></td>";
+        html+="<td>"+(a.managerApproved&&!a.adminApproved&&!a.rejected?"<button class="btn btn-green btn-xs" data-aid=""+a._id+"" onclick="adminAppApp(this)">Approve</button> <button class="btn btn-red btn-xs" data-aid=""+a._id+"" onclick="adminRejApp(this)">Reject</button>":"")+"</td></tr>";
+      });
+      html+="</tbody></table></div>";
+    }
+    html+="</div>";c.innerHTML=html;
+  });
+}
+function adminAppApp(btn){var aid=btn.getAttribute("data-aid");if(!aid)return;fbSet("apps",aid,{adminApproved:true,adminApprovedBy:CU.name,adminApprovedAt:new Date().toISOString()},function(){showToast("Approved","success");renderApps(document.getElementById("main-content"));});}
+function adminRejApp(btn){var aid=btn.getAttribute("data-aid");if(!aid)return;fbSet("apps",aid,{rejected:true,rejectedBy:CU.name,rejectedAt:new Date().toISOString()},function(){showToast("Rejected","info");renderApps(document.getElementById("main-content"));});}
+
+function renderReports(c){
+  var Q=fiscalQuarter();var qStart=getQuarterStart();var mStart=getMonthStart();
+  fbGetAll("orders",function(orders){fbGetAll("recoveries",function(recs){fbGetAll("expenses",function(exps){fbGetAll("visits",function(visits){
+    var qOrders=orders.filter(function(o){return o.createdAt&&new Date(o.createdAt)>=qStart;});
+    var mOrders=orders.filter(function(o){return o.createdAt&&new Date(o.createdAt)>=mStart;});
+    var qSales=0;qOrders.forEach(function(o){qSales+=(o.total||0);});
+    var mSales=0;mOrders.forEach(function(o){mSales+=(o.total||0);});
+    var totRec=0;recs.forEach(function(r){totRec+=(r.amount||0);});
+    var totExp=0;exps.filter(function(e){return e.adminApproved;}).forEach(function(e){totExp+=(e.amount||0);});
+
+    var html="<div class="card"><div class="card-hd">"+Q.label+" Company Report</div>";
+    html+="<div class="stat-grid">";
+    html+="<div class="stat-box gold"><div class="stat-val">"+qOrders.length+"</div><div class="stat-lbl">Q Orders</div></div>";
+    html+="<div class="stat-box navy"><div class="stat-val" style="font-size:14px">"+fmtPKR(qSales).replace("PKR ","")+"</div><div class="stat-lbl">Q Sales</div></div>";
+    html+="<div class="stat-box green"><div class="stat-val" style="font-size:14px">"+fmtPKR(totRec).replace("PKR ","")+"</div><div class="stat-lbl">Recovery</div></div>";
+    html+="<div class="stat-box red"><div class="stat-val" style="font-size:14px">"+fmtPKR(totExp).replace("PKR ","")+"</div><div class="stat-lbl">Approved Exp.</div></div>";
+    html+="</div>";
+    html+="<button class="btn btn-gold" onclick="exportQPDF()">Export Q Report PDF + WhatsApp</button> ";
+    html+="<button class="btn btn-navy" style="margin-left:6px" onclick="exportMPDF()">Export Monthly PDF</button></div>";
+
+    // Officer performance table
+    html+="<div class="card"><div class="card-hd">Officer Performance - "+Q.label+"</div>";
+    html+="<div class="tbl-wrap"><table><thead><tr><th>Officer</th><th>Region</th><th>Orders</th><th>Q Sales</th><th>Target</th><th>Achievement</th><th>Visits</th></tr></thead><tbody id="perf-tbody"><tr><td colspan="7" style="text-align:center;padding:16px;color:#a0aec0">Loading...</td></tr></tbody></table></div></div>";
+
+    c.innerHTML=html;
+    window._reportCache={qOrders:qOrders,mOrders:mOrders,qSales:qSales,mSales:mSales,totRec:totRec,totExp:totExp,Q:Q,visits:visits};
+
+    var rows=[];var done=0;
+    if(!OFFICERS.length){var tb=document.getElementById("perf-tbody");if(tb)tb.innerHTML="<tr><td colspan="7" style="text-align:center;color:#a0aec0">No officers</td></tr>";return;}
+    OFFICERS.forEach(function(off){
+      fbGetSetting("target_"+off.username,function(tgt){
+        var oOrders=qOrders.filter(function(o){return o.officerUsername===off.username;});
+        var oSales=0;oOrders.forEach(function(o){oSales+=(o.total||0);});
+        var oVisits=visits.filter(function(v){return v.officerUsername===off.username;}).length;
+        var target=parseFloat(tgt)||0;
+        var pct=target>0?Math.min(999,Math.round(oSales/target*100)):0;
+        rows.push({name:off.name,region:off.region,orders:oOrders.length,sales:oSales,target:target,pct:pct,visits:oVisits});
+        done++;
+        if(done===OFFICERS.length){
+          rows.sort(function(a,b){return b.sales-a.sales;});
+          var h="";
+          rows.forEach(function(r){
+            var color=r.pct>=100?"text-green":r.pct>=50?"text-gold":"text-red";
+            h+="<tr><td class="fw7">"+r.name+"</td><td class="f11"><span class="badge bg-gray">"+r.region+"</span></td><td>"+r.orders+"</td><td>"+fmtPKR(r.sales)+"</td><td>"+fmtPKR(r.target)+"</td><td class="fw7 "+color+"">"+r.pct+"%</td><td>"+r.visits+"</td></tr>";
+          });
+          var tb=document.getElementById("perf-tbody");if(tb)tb.innerHTML=h;
+          window._reportRows=rows;
+        }
+      });
+    });
+  });});});});
+}
+
+function exportQPDF(){
+  var d=window._reportCache||{};var Q=fiscalQuarter();
+  var rows=window._reportRows||[];
+  var tbl="<table style="width:100%;border-collapse:collapse;margin-bottom:16px"><tr style="background:#0A1628;color:#fff"><th style="padding:8px">Metric</th><th style="padding:8px">Value</th></tr>";
+  tbl+="<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0;color:#718096">Period</td><td style="padding:6px;border-bottom:1px solid #e2e8f0;font-weight:700">"+(Q.label)+"</td></tr>";
+  tbl+="<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0;color:#718096">Total Orders</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">"+(d.qOrders?d.qOrders.length:0)+"</td></tr>";
+  tbl+="<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0;color:#718096">Q Sales</td><td style="padding:6px;border-bottom:1px solid #e2e8f0;font-weight:700">"+fmtPKR(d.qSales||0)+"</td></tr>";
+  tbl+="<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0;color:#718096">Recovery</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">"+fmtPKR(d.totRec||0)+"</td></tr>";
+  tbl+="<tr><td style="padding:6px;color:#718096">Approved Expenses</td><td style="padding:6px">"+fmtPKR(d.totExp||0)+"</td></tr></table>";
+  if(rows.length){
+    tbl+="<h3 style="color:#0A1628;margin:16px 0 8px">Officer Performance</h3>";
+    tbl+="<table style="width:100%;border-collapse:collapse"><tr style="background:#0A1628;color:#fff"><th style="padding:7px">Officer</th><th style="padding:7px">Region</th><th style="padding:7px">Orders</th><th style="padding:7px">Sales</th><th style="padding:7px">Target</th><th style="padding:7px">%</th></tr>";
+    rows.forEach(function(r){tbl+="<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0">"+r.name+"</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">"+r.region+"</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">"+r.orders+"</td><td style="padding:6px;border-bottom:1px solid #e2e8f0;font-weight:700">"+fmtPKR(r.sales)+"</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">"+fmtPKR(r.target)+"</td><td style="padding:6px;border-bottom:1px solid #e2e8f0;font-weight:700">"+r.pct+"%</td></tr>";});
+    tbl+="</table>";
+  }
+  pdfExport(Q.label+" Company Report - Biorise Pharmaceuticals",tbl);
+}
+
+function exportMPDF(){
+  var d=window._reportCache||{};
+  var mLabel=new Date().toLocaleDateString("en-PK",{month:"long",year:"numeric"});
+  var tbl="<table style="width:100%;border-collapse:collapse"><tr style="background:#0A1628;color:#fff"><th style="padding:8px">Metric</th><th style="padding:8px">Value</th></tr>";
+  tbl+="<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0;color:#718096">Month</td><td style="padding:6px;border-bottom:1px solid #e2e8f0;font-weight:700">"+mLabel+"</td></tr>";
+  tbl+="<tr><td style="padding:6px;border-bottom:1px solid #e2e8f0;color:#718096">Orders</td><td style="padding:6px;border-bottom:1px solid #e2e8f0">"+(d.mOrders?d.mOrders.length:0)+"</td></tr>";
+  tbl+="<tr><td style="padding:6px;color:#718096">Sales</td><td style="padding:6px;font-weight:700">"+fmtPKR(d.mSales||0)+"</td></tr></table>";
+  pdfExport(mLabel+" Monthly Report - Biorise Pharmaceuticals",tbl);
+}
+
+function exportTablePDF(tbodyId,title){
+  var tbody=document.getElementById(tbodyId);
+  var tbl=tbody?"<table style="width:100%;border-collapse:collapse">"+tbody.parentElement.outerHTML+"</table>":"<p>No data</p>";
+  pdfExport(title,tbl);
+}
+
+function pdfExport(title,bodyHTML){
+  var w=window.open("","_blank");if(!w){showToast("Allow popups","error");return;}
+  var dt=new Date().toLocaleString("en-PK");
+  var waUrl="https://wa.me/?text="+encodeURIComponent(title+" - "+dt);
+  var h="<!DOCTYPE html><html><head><meta charset=UTF-8><title>"+title+"<"+"/title>";
+  h+="<style>body{font-family:Arial,sans-serif;padding:20px;color:#1a202c}.hd{border-bottom:3px solid #C9A84C;padding-bottom:12px;margin-bottom:16px}.logo{font-size:24px;font-weight:900;color:#0A1628}.logo em{color:#C9A84C;font-style:normal}.meta{font-size:12px;color:#718096;margin-top:4px}.dev{font-size:10px;color:#a0aec0;text-align:center;margin-top:16px;padding-top:10px;border-top:1px solid #e2e8f0}@media print{.np{display:none}}<"+"/style><"+"/head><body>";
+  h+="<div class="hd"><div class="logo">Bio<em>rise</em> Pharmaceuticals<"+"/div><div class="meta">19-KM Lahore Road, Multan, Pakistan - "+dt+"<"+"/div><"+"/div>";
+  h+="<h2 style="color:#0A1628;margin-bottom:16px">"+title+"<"+"/h2>"+bodyHTML;
+  h+="<div class="np" style="margin-top:20px;border-top:1px solid #e2e8f0;padding-top:16px">";
+  h+="<button onclick="window.print()" style="padding:10px 22px;background:#0A1628;color:#fff;border:none;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer;margin-right:10px">Print / Save PDF<"+"/button>";
+  h+="<a href=""+waUrl+"" target="_blank" style="padding:10px 22px;background:#25D366;color:#fff;border-radius:7px;font-size:14px;font-weight:700;text-decoration:none">Share WhatsApp<"+"/a><"+"/div>";
+  h+="<div class="dev">Developed by <strong>Muhammad Mazhar ul Hassan<"+"/strong> - All Legal Rights Reserved &copy; 2026 - Biorise Pharmaceuticals<"+"/div>";
+  h+="<"+"/body><"+"/html>";
+  w.document.write(h);w.document.close();
+}
+
+window.addEventListener("load",function(){checkExistingSession();});
+window.doLogin=doLogin;window.doLogout=doLogout;window.showTab=showTab;
+window.filterAdminOrders=filterAdminOrders;
+window.adminApproveOrder=adminApproveOrder;window.adminRejectOrder=adminRejectOrder;
+window.adminAppExp=adminAppExp;window.adminRejExp=adminRejExp;
+window.adminAppApp=adminAppApp;window.adminRejApp=adminRejApp;
+window.saveTarget=saveTarget;window.savePetrolRate=savePetrolRate;
+window.exportQPDF=exportQPDF;window.exportMPDF=exportMPDF;
+window.exportTablePDF=exportTablePDF;window.exportJourneyPDF=exportJourneyPDF;
+</script>
+</body>
+</html>
